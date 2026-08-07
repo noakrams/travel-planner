@@ -29,7 +29,13 @@ export function PlanPage() {
     const routes = items.filter((item) => item.kind === 'route')
     const bookings = items.filter((item) => ['booking', 'stay', 'transport'].includes(item.kind))
     return <>
-      <div className="day-strip" aria-label="Trip days">{days.map((day) => <button className={day.id === activeDay?.id ? 'active' : ''} key={day.id} onClick={() => setSelectedDay(day.id)}><span>{format(new Date(`${day.date}T12:00:00`), 'EEE')}</span><strong>{format(new Date(`${day.date}T12:00:00`), 'd')}</strong></button>)}{editMode ? <button className="add-day" onClick={() => { setSelectedDay(undefined); setDayEditorOpen(true) }}><CalendarPlus /><span>Add</span></button> : null}</div>
+      <div className="day-strip" aria-label="Trip days">{days.map((day) => {
+        const active = day.id === activeDay?.id
+        return <button className={active ? 'active' : ''} key={day.id} aria-label={`${format(new Date(`${day.date}T12:00:00`), 'EEE d — EEEE, MMMM d')}${editMode && active ? ' — tap again to edit' : ''}`} onClick={() => {
+          if (editMode && active) { setSelectedDay(day.id); setDayEditorOpen(true) }
+          else setSelectedDay(day.id)
+        }}><span>{format(new Date(`${day.date}T12:00:00`), 'EEE')}</span><strong>{format(new Date(`${day.date}T12:00:00`), 'd')}</strong></button>
+      })}{editMode ? <button className="add-day" onClick={() => { setSelectedDay(undefined); setDayEditorOpen(true) }}><CalendarPlus /><span>Add</span></button> : null}</div>
       <div className="trip-layout-grid">
         <section className="itinerary-section" aria-labelledby="day-heading">
           <div className="day-heading"><div><p className="eyebrow">Day {(activeDay?.position ?? 0) + 1} · {activeDay ? format(new Date(`${activeDay.date}T12:00:00`), 'EEEE, MMMM d') : ''}</p><BidiText as="h2" id="day-heading" value={activeDay?.title ?? ''}>{activeDay?.title ?? 'Plan your first day'}</BidiText><BidiText as="p" value={activeDay?.summary ?? ''}>{activeDay?.summary}</BidiText>{editMode && activeDay ? <button className="text-action" onClick={() => { setSelectedDay(activeDay.id); setDayEditorOpen(true) }}>Edit day details</button> : null}</div>{editMode && activeDay ? <button className="pill dark" onClick={() => { setEditing(undefined); setEditorOpen(true) }}><Plus />Add item</button> : null}</div>

@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { db } from './db'
+import type { ContentKind, OutboxEntry } from '../domain/types'
 
 const getUser = vi.hoisted(() => vi.fn(async () => ({ data: { user: null } })))
 vi.mock('./supabase', () => ({ hasSupabaseConfig: () => true, getSupabase: async () => ({ auth: { getUser } }) }))
 
-import { normalizeRemoteStatus, synchronizeOutbox, syncErrorMessage } from './sync'
+import { normalizeRemoteStatus, remotePayload, synchronizeOutbox, syncErrorMessage } from './sync'
 
 afterEach(async () => { await db.delete() })
 
@@ -22,6 +23,25 @@ describe('syncErrorMessage', () => {
   it('preserves Supabase plain-object error messages', () => {
     expect(syncErrorMessage({ code: '42501', message: 'new row violates row-level security policy' })).toBe('new row violates row-level security policy')
   })
+})
+
+describe('remotePayload day assignments', () => {
+  it.each(['booking', 'stay', 'transport', 'place', 'food'] satisfies ContentKind[])(
+    'keeps the day and time when synchronizing a %s',
+    (kind) => {
+      const entry: OutboxEntry = {
+        id: `sync-${kind}`, tripId: 'trip-japan-2026', entity: 'item', entityId: `item-${kind}`, operation: 'update',
+        payload: {
+          id: `item-${kind}`, tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind, title: 'Tokyo stop',
+          description: 'Published itinerary stop', startTime: '16:45', status: 'booked', position: 3,
+          createdAt: '2026-08-07T00:00:00.000Z', updatedAt: '2026-08-07T00:00:00.000Z', version: 2
+        },
+        baseVersion: 1, retryCount: 0, state: 'pending', createdAt: '2026-08-07T00:00:00.000Z',
+        updatedAt: '2026-08-07T00:00:00.000Z', version: 1
+      }
+      expect(remotePayload(entry)).toMatchObject({ day_id: 'day-japan-2', start_time: '16:45' })
+    }
+  )
 })
 
 describe('synchronizeOutbox authentication', () => {

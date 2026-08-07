@@ -43,11 +43,11 @@ export const fixtureDays: TripDay[] = [
   { ...base, id: 'day-lisbon-1', tripId: 'trip-portugal-2026', date: '2026-10-08', title: 'Arrival in Lisbon', summary: 'Check in, stretch your legs, and let the city come to you.', position: 0 },
   { ...base, id: 'day-lisbon-2', tripId: 'trip-portugal-2026', date: '2026-10-09', title: 'The city of seven hills', summary: 'Alfama early, Baixa at lunch, and a sunset above the rooftops.', position: 1 },
   { ...base, id: 'day-lisbon-3', tripId: 'trip-portugal-2026', date: '2026-10-10', title: 'Belém and the river', summary: 'A light museum day with plenty of room for the waterfront.', position: 2 },
-  { ...base, id: 'day-japan-1', tripId: 'trip-japan-2026', date: '2026-09-18', title: 'Arrive in Tokyo', summary: 'Narita at 18:25, then the N’EX to Shibuya. Check in and keep the evening deliberately empty.', position: 0 },
-  { ...base, id: 'day-japan-2', tripId: 'trip-japan-2026', date: '2026-09-19', title: 'Shibuya on foot', summary: 'A gentle jet-lag loop: the crossing, pop culture, rooftop green space, sunset, and tiny bar alleys.', position: 1 },
+  { ...base, id: 'day-japan-1', tripId: 'trip-japan-2026', date: '2026-09-18', title: 'Arrive — and nothing else', summary: 'Narita 18:25 → Shibuya ≈ 21:00. By your own call: no plans.', position: 0 },
+  { ...base, id: 'day-japan-2', tripId: 'trip-japan-2026', date: '2026-09-19', title: 'Shibuya on foot — the jet-lag day', summary: 'Everything today is walkable from the hotel. Sleep in, then a gentle loop of your own neighbourhood, ending on the roof at sunset.', position: 1 },
   { ...base, id: 'day-japan-3', tripId: 'trip-japan-2026', date: '2026-09-20', title: 'Harajuku by day, Shinjuku by night', summary: 'A shrine and neighborhood walk followed by Tokyo’s most atmospheric night out.', position: 2 },
-  { ...base, id: 'day-japan-4', tripId: 'trip-japan-2026', date: '2026-09-21', title: 'teamLab, Tokyo Tower, and Ginza', summary: 'A deliberately slow morning before immersive art, dusk views, yakitori, and a theatrical cocktail.', position: 3 },
-  { ...base, id: 'day-japan-5', tripId: 'trip-japan-2026', date: '2026-09-22', title: 'The east Tokyo loop', summary: 'Asakusa early, Akihabara at midday, then an easy Shibuya evening before moving north.', position: 4 }
+  { ...base, id: 'day-japan-4', tripId: 'trip-japan-2026', date: '2026-09-21', title: 'teamLab, Tokyo Tower, and the Ginza splurge', summary: 'A relaxed morning, then the immersive-art centrepiece into a dressed-up Ginza evening.', position: 3 },
+  { ...base, id: 'day-japan-5', tripId: 'trip-japan-2026', date: '2026-09-22', title: 'The east loop — Asakusa, Akihabara, and an easy last night', summary: 'Start early for the two crowd-sensitive walk-ins, done in one tidy eastward line, then keep the evening light before the Nikko move.', position: 4 }
 ]
 
 export const fixtureItems: ContentItem[] = [

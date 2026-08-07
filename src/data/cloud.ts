@@ -35,13 +35,13 @@ function remoteDay(row: Row): TripDay {
   return { ...base(row), tripId: text(row.trip_id), date: text(row.date), title: text(row.title), summary: text(row.summary), position: number(row.position) }
 }
 
-function commonItem(row: Row, kind: ContentKind): ContentItem {
+export function commonItem(row: Row, kind: ContentKind): ContentItem {
   return {
     ...base(row), tripId: text(row.trip_id), dayId: optionalText(row.day_id), kind,
     title: text(row.title ?? row.name ?? row.city), description: text(row.description ?? row.notes ?? row.body),
     startTime: optionalText(row.start_time), endTime: optionalText(row.end_time),
     location: optionalText(row.location_name ?? row.location ?? row.destination), mapsUrl: optionalText(row.maps_url),
-    provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.status),
+    provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.display_status ?? row.status),
     position: number(row.position), plannedAmount: optionalNumber(row.planned_amount), actualAmount: optionalNumber(row.actual_amount),
     currency: optionalText(row.currency), occurredOn: optionalText(row.occurred_on), paid: row.paid == null ? undefined : Boolean(row.paid)
   }

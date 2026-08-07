@@ -5,7 +5,7 @@ test('Japan fixture includes the planned Tokyo days from September 18 to 22', as
   await expect(page.getByRole('button', { name: /FRI 18/i })).toBeVisible()
   await expect(page.getByRole('button', { name: /TUE 22/i })).toBeVisible()
   await page.getByRole('button', { name: /TUE 22/i }).click()
-  await expect(page.getByRole('heading', { name: 'The east Tokyo loop' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'The east loop — Asakusa, Akihabara, and an easy last night' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Sensō-ji at opening' })).toBeVisible()
 })
 
@@ -46,12 +46,12 @@ test('a saved itinerary edit survives closing and reopening the tab', async ({ p
   await page.getByRole('menuitem', { name: 'Edit' }).click()
   await page.getByLabel('Title').fill('Land at Narita Airport — saved')
   await page.getByRole('button', { name: 'Save changes' }).click()
-  await expect(page.getByLabel('Arrive in Tokyo').getByRole('heading', { name: 'Land at Narita Airport — saved' })).toBeVisible()
+  await expect(page.getByLabel('Arrive — and nothing else').getByRole('heading', { name: 'Land at Narita Airport — saved' })).toBeVisible()
 
   await page.close()
   const reopened = await context.newPage()
   await reopened.goto('#/trip/trip-japan-2026')
-  await expect(reopened.getByLabel('Arrive in Tokyo').getByRole('heading', { name: 'Land at Narita Airport — saved' })).toBeVisible()
+  await expect(reopened.getByLabel('Arrive — and nothing else').getByRole('heading', { name: 'Land at Narita Airport — saved' })).toBeVisible()
 })
 
 test('budget chart has a table alternative', async ({ page }) => {
