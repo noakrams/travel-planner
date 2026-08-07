@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../data/db'
 import { useSync } from './useSync'
 
-function SyncHarness() {
-  const { state, error, retry } = useSync('trip-test')
+function SyncHarness({ enabled = true }: { enabled?: boolean }) {
+  const { state, error, retry } = useSync('trip-test', enabled)
   return <><button onClick={retry}>{state}</button><output>{error}</output></>
 }
 
@@ -47,5 +47,13 @@ describe('useSync', () => {
     window.dispatchEvent(new CustomEvent('roam:sync-request', { detail: { tripId: 'trip-test' } }))
     await waitFor(() => expect(db.outbox.count()).resolves.toBe(0))
     expect(screen.getByRole('button', { name: 'saved' })).toBeInTheDocument()
+  })
+
+  it('does not expose or retry owner cloud work for a public viewer', async () => {
+    render(<SyncHarness enabled={false} />)
+    expect(screen.getByRole('button', { name: 'saved' })).toBeInTheDocument()
+    expect(screen.queryByText('Temporary failure')).not.toBeInTheDocument()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+    expect(await db.outbox.count()).toBe(2)
   })
 })

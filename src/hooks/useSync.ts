@@ -4,13 +4,14 @@ import { db } from '../data/db'
 import { retryFailedOutbox, synchronizeOutbox, syncErrorMessage } from '../data/sync'
 import { syncRequestEvent } from '../data/syncEvents'
 
-export function useSync(tripId?: string): { state: SyncState; error?: string; retry: () => void } {
+export function useSync(tripId?: string, enabled = true): { state: SyncState; error?: string; retry: () => void } {
   const [state, setState] = useState<SyncState>('saved')
   const [error, setError] = useState<string>()
   const mounted = useRef(true)
   const syncing = useRef(false)
 
   const update = useCallback(async (retryFailed = false) => {
+    if (!enabled) return
     if (syncing.current) return
     if (!navigator.onLine) { if (mounted.current) { setState('waiting'); setError(undefined) }; return }
     const entries = tripId ? await db.outbox.where('tripId').equals(tripId).toArray() : await db.outbox.toArray()
@@ -40,9 +41,10 @@ export function useSync(tripId?: string): { state: SyncState; error?: string; re
     } finally {
       syncing.current = false
     }
-  }, [tripId])
+  }, [enabled, tripId])
 
   useEffect(() => {
+    if (!enabled) return
     mounted.current = true
     const initialTimer = window.setTimeout(() => { void update() }, 0)
     const onOnline = () => { void update(true) }
@@ -55,7 +57,7 @@ export function useSync(tripId?: string): { state: SyncState; error?: string; re
     addEventListener('online', onOnline); addEventListener('offline', onOffline)
     addEventListener(syncRequestEvent, onSyncRequest)
     return () => { mounted.current = false; clearTimeout(initialTimer); removeEventListener('online', onOnline); removeEventListener('offline', onOffline); removeEventListener(syncRequestEvent, onSyncRequest); clearInterval(timer) }
-  }, [tripId, update])
+  }, [enabled, tripId, update])
 
-  return { state, error, retry: () => { void update(true) } }
+  return { state: enabled ? state : 'saved', error: enabled ? error : undefined, retry: () => { void update(true) } }
 }
