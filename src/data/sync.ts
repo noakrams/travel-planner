@@ -68,7 +68,7 @@ export async function synchronizeOutbox() {
     const timestamp = new Date().toISOString()
     await Promise.all(entries.map((entry) => db.outbox.update(entry.id, {
       state: 'failed', retryCount: entry.retryCount + 1,
-      error: 'Sign in under More to save changes to the cloud.', updatedAt: timestamp
+      error: 'Sign in to save changes to the cloud.', updatedAt: timestamp
     })))
     return { synced: 0, failed: entries.length }
   }

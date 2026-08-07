@@ -13,7 +13,7 @@ it('shows the exact sync failure and retries from the toast', async () => {
 
 it('takes a signed-out owner to sign in instead of retrying', async () => {
   const signIn = vi.fn()
-  render(<SyncToast state="attention" error="Sign in under More to save changes to the cloud." onRetry={() => undefined} onSignIn={signIn} />)
+  render(<SyncToast state="attention" error="Sign in to save changes to the cloud." onRetry={() => undefined} onSignIn={signIn} />)
   await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
   expect(signIn).toHaveBeenCalledOnce()
 })

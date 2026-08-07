@@ -34,6 +34,6 @@ describe('synchronizeOutbox authentication', () => {
       createdAt: '2026-08-07T00:00:00.000Z', updatedAt: '2026-08-07T00:00:00.000Z', version: 1
     })
     await expect(synchronizeOutbox()).resolves.toEqual({ synced: 0, failed: 1 })
-    expect((await db.outbox.get('signed-out-edit'))?.error).toBe('Sign in under More to save changes to the cloud.')
+    expect((await db.outbox.get('signed-out-edit'))?.error).toBe('Sign in to save changes to the cloud.')
   })
 })

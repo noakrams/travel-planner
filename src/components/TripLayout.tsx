@@ -43,7 +43,7 @@ export function TripLayout({ children, readOnly = false }: { children: (context:
     <TripHeader trip={query.data.trip} editMode={editMode} onToggleEdit={toggleEdit} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} />
     {!readOnly ? <BottomNav /> : null}
     <main>{children({ ...query.data, editMode: readOnly ? false : editMode })}</main>
-    {!readOnly ? <SyncToast state={syncState} error={syncError} onRetry={retrySync} onSignIn={() => { location.hash = `#/trip/${encodeURIComponent(resolvedId!)}/more` }} /> : null}
+    {!readOnly ? <SyncToast state={syncState} error={syncError} onRetry={retrySync} onSignIn={() => setSignInOpen(true)} /> : null}
     {!readOnly ? <OwnerSignInDialog open={signInOpen} onOpenChange={changeSignInOpen} access={ownerAccess} /> : null}
   </div>
 }
