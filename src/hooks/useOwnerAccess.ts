@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getOwnerAccess, getSupabase, hasSupabaseConfig } from '../data/supabase'
 
-export type OwnerAccess = 'checking' | 'signed-out' | 'owner' | 'denied' | 'unavailable'
+export type OwnerAccess = 'checking' | 'signed-out' | 'owner' | 'editor' | 'denied' | 'unavailable'
 
 export function useOwnerAccess() {
   const testOwner = import.meta.env.VITE_E2E_OWNER_BYPASS === 'true'

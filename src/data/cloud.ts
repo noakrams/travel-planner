@@ -64,13 +64,15 @@ async function runCloudBootstrap() {
   if (!hasSupabaseConfig() || !navigator.onLine) return { state: 'local' as const }
   const supabase = await getSupabase()
   if (!supabase) return { state: 'local' as const }
-  if (await getOwnerAccess() !== 'owner') return { state: 'signed-out' as const }
+  const access = await getOwnerAccess()
+  if (access !== 'owner' && access !== 'editor') return { state: 'signed-out' as const }
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) return { state: 'signed-out' as const }
 
   const { data: remoteTrips, error: tripError } = await supabase.from('trips').select('*').is('deleted_at', null)
   if (tripError) throw tripError
   if (!remoteTrips?.length) {
+    if (access === 'editor') return { state: 'downloaded' as const }
     await localRepository.prepareInitialCloudUpload(auth.user.id)
     await retryFailedOutbox()
     const result = await synchronizeOutbox()

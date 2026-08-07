@@ -38,14 +38,14 @@ export async function signInWithGoogle(selectAccount = false) {
   if (error) throw error
 }
 
-export async function getOwnerAccess(): Promise<'signed-out' | 'owner' | 'denied'> {
+export async function getOwnerAccess(): Promise<'signed-out' | 'owner' | 'editor' | 'denied'> {
   const supabase = await getSupabase()
   if (!supabase) return 'signed-out'
   const { data: auth, error: authError } = await supabase.auth.getUser()
   if (authError || !auth.user) return 'signed-out'
-  const { data: isOwner, error: ownerError } = await supabase.rpc('is_app_owner')
-  if (ownerError) throw ownerError
-  return isOwner === true ? 'owner' : 'denied'
+  const { data: role, error: roleError } = await supabase.rpc('get_app_access_role')
+  if (roleError) throw roleError
+  return role === 'owner' || role === 'editor' ? role : 'denied'
 }
 
 function getAuthRedirectUrl() {

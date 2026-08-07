@@ -44,7 +44,7 @@ export function AuthPanel() {
   const configured = hasSupabaseConfig()
   return <section className="auth-panel">
     <div>
-      <p className="eyebrow">Owner access</p>
+      <p className="eyebrow">Editor access</p>
       <h2>{signedInEmail ? 'Cloud sync is connected' : 'Your trip, one tap away'}</h2>
       <p>{signedInEmail ? `Signed in as ${signedInEmail}. This device will remember you, and edits will follow you between devices.` : configured ? 'Continue with your approved Google account. You will stay signed in on this device.' : 'Local mode is active. Add public Supabase credentials to enable owner sign-in and cloud sync.'}</p>
     </div>

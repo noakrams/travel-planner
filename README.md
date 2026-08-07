@@ -33,9 +33,9 @@ The app works in local mode without credentials. To enable owner authentication,
 
 7. Copy `.env.example` to `.env.local` and add only the public project URL and anon key.
 
-The Google button authenticates an account; it does not grant edit access by itself. Database row-level security still requires the signed-in user's UUID to be present in `public.app_owners`, so other Google accounts cannot read or change owner data. Supabase browser sessions persist by default, so the owner stays signed in on that browser/device until signing out, clearing site data, or a configured session limit expires.
+The Google button authenticates an account; it does not grant edit access by itself. Database row-level security requires the signed-in user to be either the owner in `public.app_owners` or an approved verified editor. Approved editor emails are normalized and stored only as SHA-256 hashes in the private `private.app_editors` table. Supabase browser sessions persist by default, so an approved user stays signed in on that browser/device until signing out, clearing site data, or a configured session limit expires.
 
-Visitors do not need to sign in. The public itinerary stays readable, while edit, create, duplicate, import, and settings controls are enabled only after the current Google user passes the `public.is_app_owner()` database check. Keep only Noa Krams's Auth user UUID in `public.app_owners`.
+Visitors do not need to sign in. The `#/share/...` itinerary is always read-only and hides editor controls. Owners can create and duplicate trips; approved editors can edit existing trips but cannot create, duplicate, delete, or take ownership of a trip. Keep only Noa Krams's Auth user UUID in `public.app_owners`.
 
 Never put a service-role key, Management API token, database password, or GitHub credential in a Vite variable or committed file.
 

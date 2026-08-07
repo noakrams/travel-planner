@@ -93,7 +93,7 @@ export async function synchronizeOutbox() {
       } else {
         const table = entry.entity === 'trip' ? 'trips' : entry.entity === 'day' ? 'trip_days' : tableForKind((entry.payload as ContentItem).kind)
         const outgoing = remotePayload(entry) as Record<string, unknown>
-        if (entry.entity === 'trip') {
+        if (entry.entity === 'trip' && (!outgoing.owner_id || outgoing.owner_id === 'local-owner')) {
           outgoing.owner_id = auth.user.id
         }
         const { error } = await supabase.from(table).upsert(outgoing, { onConflict: 'id' })

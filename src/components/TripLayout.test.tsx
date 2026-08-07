@@ -25,6 +25,6 @@ it('opens Google owner sign-in directly from the sync warning', async () => {
   )
 
   await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
-  expect(screen.getByRole('dialog', { name: 'Edit as Noa' })).toBeInTheDocument()
+  expect(screen.getByRole('dialog', { name: 'Edit trip' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument()
 })

@@ -17,22 +17,23 @@ export function TripLayout({ children, readOnly = false }: { children: (context:
   const [editRequested, setEditRequested] = useState(() => Boolean(resolvedId && sessionStorage.getItem('roam-edit-after-sign-in') === resolvedId))
   const [signInOpen, setSignInOpen] = useState(false)
   const ownerAccess = useOwnerAccess()
-  const editMode = editRequested && ownerAccess === 'owner'
-  const { state: syncState, error: syncError, retry: retrySync } = useSync(resolvedId, ownerAccess === 'owner')
+  const canEdit = ownerAccess === 'owner' || ownerAccess === 'editor'
+  const editMode = editRequested && canEdit
+  const { state: syncState, error: syncError, retry: retrySync } = useSync(resolvedId, canEdit)
   const toggleEdit = () => {
     if (editMode) {
       setEditRequested(false)
       sessionStorage.removeItem('roam-edit-after-sign-in')
       return
     }
-    if (ownerAccess === 'owner') { setEditRequested(true); return }
+    if (canEdit) { setEditRequested(true); return }
     if (resolvedId) sessionStorage.setItem('roam-edit-after-sign-in', resolvedId)
     setEditRequested(true)
     setSignInOpen(true)
   }
   const changeSignInOpen = (open: boolean) => {
     setSignInOpen(open)
-    if (!open && ownerAccess !== 'owner') {
+    if (!open && !canEdit) {
       setEditRequested(false)
       sessionStorage.removeItem('roam-edit-after-sign-in')
     }
