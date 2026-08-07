@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-let client: SupabaseClient | undefined
+let clientPromise: Promise<SupabaseClient> | undefined
 
 export function hasSupabaseConfig() {
   return Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
@@ -8,13 +8,12 @@ export function hasSupabaseConfig() {
 
 export async function getSupabase(): Promise<SupabaseClient | undefined> {
   if (!hasSupabaseConfig()) return undefined
-  if (!client) {
-    const { createClient } = await import('@supabase/supabase-js')
-    client = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' }
-    })
-  }
-  return client
+  if (!clientPromise) clientPromise = import('@supabase/supabase-js').then(({ createClient }) => createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY,
+    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' } }
+  ))
+  return clientPromise
 }
 
 export async function sendMagicLink(email: string) {
