@@ -22,7 +22,7 @@ The app works in local mode without credentials. To enable owner authentication,
 1. Create a Supabase project.
 2. Apply `supabase/migrations/20260806180000_initial_schema.sql` with the Supabase CLI or SQL editor.
 3. Enable Google under **Authentication → Sign In / Providers** in Supabase. Create a Google OAuth web client, add the Supabase callback URL shown on that provider page to Google's authorized redirect URIs, then paste the Google client ID and secret into Supabase.
-4. Under **Authentication → URL Configuration**, set the production site URL and add both production and local auth callback URLs to the redirect allowlist. For this app they are `https://noakrams.github.io/travel-planner/#/auth/callback` and `http://localhost:5173/#/auth/callback`.
+4. Under **Authentication → URL Configuration**, set the production site URL and add both production and local auth callback URLs to the redirect allowlist. For this app they are `https://noakrams.github.io/travel-planner/?auth=callback` and `http://localhost:5173/?auth=callback`.
 5. Sign in once with the Google account that will own the app. If its verified email matches the existing magic-link user, Supabase automatically links Google to that same user.
 6. In the Supabase SQL editor, add that user's UUID to the owner allowlist and create the profile if those rows do not already exist, replacing the UUID and name:
 

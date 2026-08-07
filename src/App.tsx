@@ -13,7 +13,7 @@ const BookingsPage = lazy(() => import('./pages/BookingsPage').then((module) => 
 const MorePage = lazy(() => import('./pages/MorePage').then((module) => ({ default: module.MorePage })))
 
 export function App() {
-  return <><CloudBootstrap /><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus() }}>Skip to main content</a><div id="main-content" tabIndex={-1}><Routes>
+  return <><OAuthReturn /><CloudBootstrap /><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus() }}>Skip to main content</a><div id="main-content" tabIndex={-1}><Routes>
       <Route path="/" element={<TripsPage />} />
       <Route path="/trip/:tripId" element={<Suspense fallback={<PageSkeleton />}><PlanPage /></Suspense>} />
       <Route path="/trip/:tripId/day/:date" element={<Suspense fallback={<PageSkeleton />}><PlanPage /></Suspense>} />
@@ -24,6 +24,27 @@ export function App() {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes></div><UpdatePrompt /></>
+}
+
+function OAuthReturn() {
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const code = params.get('code')
+    if (params.get('auth') !== 'callback' || !code) return
+    let active = true
+    void getSupabase().then(async (supabase) => {
+      if (!supabase) return
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (!active) return
+      if (error) console.error('Google sign-in callback failed', error)
+      const returnHash = sessionStorage.getItem('roam-auth-return-hash')
+      sessionStorage.removeItem('roam-auth-return-hash')
+      history.replaceState({}, '', location.pathname)
+      location.hash = returnHash?.startsWith('#/') ? returnHash : '#/'
+    })
+    return () => { active = false }
+  }, [])
+  return null
 }
 
 function CloudBootstrap() {

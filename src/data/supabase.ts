@@ -11,7 +11,7 @@ export async function getSupabase(): Promise<SupabaseClient | undefined> {
   if (!client) {
     const { createClient } = await import('@supabase/supabase-js')
     client = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' }
     })
   }
   return client
@@ -50,5 +50,7 @@ export async function getOwnerAccess(): Promise<'signed-out' | 'owner' | 'denied
 }
 
 function getAuthRedirectUrl() {
-  return `${location.origin}${location.pathname}#/auth/callback`
+  const callback = new URL(location.pathname, location.origin)
+  callback.searchParams.set('auth', 'callback')
+  return callback.toString()
 }
