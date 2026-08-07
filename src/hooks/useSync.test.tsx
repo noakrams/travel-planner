@@ -1,5 +1,4 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../data/db'
 import { useSync } from './useSync'
@@ -26,14 +25,10 @@ describe('useSync', () => {
   })
   afterEach(async () => { cleanup(); await db.delete() })
 
-  it('runs a failed outbox retry and updates the visible state', async () => {
-    const user = userEvent.setup()
+  it('automatically retries failed outbox entries on startup', async () => {
     render(<SyncHarness />)
-    expect(await screen.findByRole('button', { name: 'attention' })).toBeInTheDocument()
-    expect(screen.getByText('Temporary failure')).toBeInTheDocument()
-    await user.click(screen.getByRole('button'))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'saved' })).toBeInTheDocument())
-    expect(await db.outbox.count()).toBe(0)
+    await waitFor(() => expect(db.outbox.count()).resolves.toBe(0))
+    expect(screen.getByRole('button', { name: 'saved' })).toBeInTheDocument()
   })
 
   it('synchronizes immediately when a save requests it', async () => {

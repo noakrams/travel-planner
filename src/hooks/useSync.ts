@@ -46,7 +46,7 @@ export function useSync(tripId?: string, enabled = true): { state: SyncState; er
   useEffect(() => {
     if (!enabled) return
     mounted.current = true
-    const initialTimer = window.setTimeout(() => { void update() }, 0)
+    const initialTimer = window.setTimeout(() => { void update(true) }, 0)
     const onOnline = () => { void update(true) }
     const onOffline = () => { void update() }
     const onSyncRequest = (event: Event) => {
