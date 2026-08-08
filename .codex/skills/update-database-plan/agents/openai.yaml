@@ -1,0 +1,12 @@
+interface:
+  display_name: "Update Database Plan"
+  short_description: "Safely update itinerary data in Supabase"
+  default_prompt: "Use $update-database-plan to update the itinerary in Supabase and verify the saved records."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "supabase"
+      description: "Supabase MCP server for database reads, writes, and verification"
+      transport: "streamable_http"
+      url: "https://mcp.supabase.com/mcp/"
