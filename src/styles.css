@@ -96,7 +96,7 @@ h3 { line-height: 1.2; }
 .sortable-card-wrap { position: relative; min-width: 0; }
 .journey-stop.is-dragging { z-index: 30; opacity: .82; }
 .drag-handle { position: absolute; z-index: 3; top: 12px; left: 12px; display: grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: 50%; background: rgb(255 254 251 / 90%); color: var(--umber); box-shadow: 0 4px 18px rgb(36 33 29 / 12%); touch-action: none; }
-.sortable-card-wrap .drag-handle + .itinerary-card .card-body h3 { padding-left: 34px; }
+.sortable-card-wrap .drag-handle + .itinerary-card .card-kicker { min-height: 30px; padding-left: 48px; }
 .itinerary-card { position: relative; overflow: hidden; min-width: 0; border: 1px solid rgb(75 67 57 / 11%); border-radius: 30px; background: var(--surface); box-shadow: var(--shadow-soft); }
 .card-image { aspect-ratio: 16 / 9; overflow: hidden; }
 .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms var(--ease); }
@@ -130,6 +130,8 @@ h3 { line-height: 1.2; }
 
 @media (min-width: 768px) {
   .bottom-nav { position: sticky; top: 14px; bottom: auto; left: auto; margin: -34px auto 0; transform: none; }
+  .day-strip { top: 96px; background: var(--paper); box-shadow: 0 -96px 0 10px var(--paper); }
+  .trip-aside { top: 190px; }
 }
 
 .trips-page { min-height: 100dvh; padding: 0 clamp(20px, 5vw, 72px) 100px; }
@@ -344,9 +346,11 @@ thead th { color: var(--muted); font-size: .68rem; text-transform: uppercase; }
   .hero-content h1 { margin-bottom: 10px; font-size: 3rem; }
   .hero-content > p:not(.eyebrow) { display: none; }
   .hero-actions { margin-top: 12px; }
-  .bottom-nav { left: calc(100vw - 152px); right: auto; bottom: 8px; width: 76px; flex-direction: column; transform: none; border-radius: 30px; }
+  .bottom-nav { position: fixed; top: 50%; right: 8px; bottom: auto; left: auto; width: 76px; flex-direction: column; transform: translateY(-50%); border-radius: 30px; }
   .bottom-nav a { width: 62px; min-height: 48px; }
   .bottom-nav a span { display: none; }
+  .day-strip { top: 0; }
+  .trip-aside { top: 20px; }
   .sync-toast { right: 100px; bottom: max(8px, env(safe-area-inset-bottom)); left: 12px; width: auto; }
   .app-shell { padding-right: 168px; padding-bottom: 0; }
 }
