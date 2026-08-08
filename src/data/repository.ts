@@ -1,28 +1,8 @@
 import { db } from './db'
-import { fixtureDays, fixtureItems, fixtureTrips } from './fixtures'
 import type { ContentItem, MediaRecord, OutboxEntry, Trip, TripBundle, TripDay } from '../domain/types'
 import { requestSync } from './syncEvents'
 
 const now = () => new Date().toISOString()
-
-async function ensureSeeded() {
-  if ((await db.trips.count()) > 0) {
-    await db.transaction('rw', db.days, db.items, async () => {
-      const existingDays = new Set((await db.days.bulkGet(fixtureDays.map((day) => day.id))).filter(Boolean).map((day) => day!.id))
-      const existingItems = new Set((await db.items.bulkGet(fixtureItems.map((item) => item.id))).filter(Boolean).map((item) => item!.id))
-      const missingDays = fixtureDays.filter((day) => !existingDays.has(day.id))
-      const missingItems = fixtureItems.filter((item) => !existingItems.has(item.id))
-      if (missingDays.length) await db.days.bulkAdd(missingDays)
-      if (missingItems.length) await db.items.bulkAdd(missingItems)
-    })
-    return
-  }
-  await db.transaction('rw', db.trips, db.days, db.items, async () => {
-    await db.trips.bulkAdd(fixtureTrips)
-    await db.days.bulkAdd(fixtureDays)
-    await db.items.bulkAdd(fixtureItems)
-  })
-}
 
 async function enqueue(
   tripId: string,
@@ -43,12 +23,15 @@ async function enqueue(
 }
 
 export const localRepository = {
+  async clearCloudCache() {
+    await db.transaction('rw', db.trips, db.days, db.items, db.media, db.outbox, async () => {
+      await Promise.all([db.trips.clear(), db.days.clear(), db.items.clear(), db.media.clear(), db.outbox.clear()])
+    })
+  },
   async listTrips(): Promise<Trip[]> {
-    await ensureSeeded()
     return (await db.trips.toArray()).filter((trip) => !trip.deletedAt).sort((a, b) => a.startDate.localeCompare(b.startDate))
   },
   async getTrip(tripId: string): Promise<TripBundle | undefined> {
-    await ensureSeeded()
     const [trip, days, items, media] = await Promise.all([
       db.trips.get(tripId), db.days.where('tripId').equals(tripId).toArray(),
       db.items.where('tripId').equals(tripId).toArray(), db.media.where('tripId').equals(tripId).toArray()
@@ -62,9 +45,6 @@ export const localRepository = {
     }
   },
   async getSharedTrip(rawToken: string): Promise<TripBundle | undefined> {
-    await ensureSeeded()
-    const trip = (await db.trips.toArray()).find((entry) => entry.shareEnabled && (entry.shareToken === rawToken || entry.id === rawToken))
-    if (trip) return this.getTrip(trip.id)
     if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
       const { getRemoteSharedTrip } = await import('./remoteShared')
       return getRemoteSharedTrip(rawToken)
@@ -215,26 +195,6 @@ export const localRepository = {
   async pendingCount(tripId?: string) {
     const entries = tripId ? await db.outbox.where('tripId').equals(tripId).toArray() : await db.outbox.toArray()
     return entries.filter((entry) => entry.state !== 'processing').length
-  },
-  async prepareInitialCloudUpload(ownerId: string) {
-    await ensureSeeded()
-    const [trips, days, items, media] = await Promise.all([
-      db.trips.toArray(), db.days.toArray(), db.items.toArray(), db.media.toArray()
-    ])
-    const liveTrips = trips.filter((trip) => !trip.deletedAt).map((trip) => ({ ...trip, ownerId }))
-    const liveTripIds = new Set(liveTrips.map((trip) => trip.id))
-    const liveDays = days.filter((day) => liveTripIds.has(day.tripId) && !day.deletedAt)
-    const liveItems = items.filter((item) => liveTripIds.has(item.tripId) && !item.deletedAt)
-    const liveMedia = media.filter((entry) => liveTripIds.has(entry.tripId) && !entry.deletedAt)
-
-    await db.transaction('rw', db.trips, db.outbox, async () => {
-      await db.trips.bulkPut(liveTrips)
-      await db.outbox.clear()
-    })
-    for (const trip of liveTrips) await enqueue(trip.id, 'trip', trip.id, 'create', trip, 0)
-    for (const day of liveDays) await enqueue(day.tripId, 'day', day.id, 'create', day, 0)
-    for (const item of liveItems) await enqueue(item.tripId, 'item', item.id, 'create', item, 0)
-    for (const entry of liveMedia) await enqueue(entry.tripId, 'media', entry.id, 'upload', { ...entry, blob: undefined }, 0)
   },
   async replaceFromCloud(bundle: { trips: Trip[]; days: TripDay[]; items: ContentItem[]; media: MediaRecord[] }) {
     await db.transaction('rw', db.trips, db.days, db.items, db.media, db.outbox, async () => {

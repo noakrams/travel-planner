@@ -39,7 +39,7 @@ export function TripLayout({ children, readOnly = false }: { children: (context:
     }
   }
   if (query.isLoading) return <main className="page-skeleton" aria-busy="true"><div /><div /><div /></main>
-  if (!query.data) return <main className="empty-page"><p className="eyebrow">Trip unavailable</p><h1>This trip is not on this device.</h1><a className="button primary" href="#/">Return to trips</a></main>
+  if (!query.data) return <main className="empty-page"><p className="eyebrow">Trip unavailable</p><h1>{readOnly ? 'This share link is invalid or no longer active.' : 'This trip is not available in Supabase.'}</h1><a className="button primary" href="#/">Return to trips</a></main>
   return <div className="app-shell">
     <TripHeader trip={query.data.trip} editMode={editMode} onToggleEdit={toggleEdit} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} />
     {!readOnly ? <BottomNav /> : null}

@@ -7,7 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     restoreMocks: true,
-    exclude: ['tests/e2e/**', 'node_modules/**'],
+    exclude: ['tests/e2e/**', 'node_modules/**', '.worktrees/**'],
     env: { VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' }
   }
 })

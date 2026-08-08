@@ -135,6 +135,11 @@ h3 { line-height: 1.2; }
 }
 
 .trips-page { min-height: 100dvh; padding: 0 clamp(20px, 5vw, 72px) 100px; }
+.cloud-access-page { min-height: 100dvh; padding: clamp(28px, 5vw, 72px); }
+.cloud-access-page > section { display: grid; gap: 20px; width: min(760px, 100%); margin-top: clamp(90px, 14vw, 180px); }
+.cloud-access-page h1 { max-width: 760px; font-size: clamp(3rem, 8vw, 6rem); }
+.cloud-access-page section > p:not(.eyebrow) { max-width: 620px; color: var(--muted); font-size: 1.05rem; line-height: 1.65; }
+.cloud-access-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 12px; }
 .trips-header { display: flex; align-items: center; justify-content: space-between; min-height: 92px; padding-top: env(safe-area-inset-top); }
 .trips-intro { max-width: 930px; padding: clamp(54px, 8vw, 110px) 0 clamp(48px, 7vw, 92px); }
 .trips-intro h1 { margin-bottom: 24px; }
@@ -150,6 +155,7 @@ h3 { line-height: 1.2; }
 .poster-copy p { margin-bottom: 8px; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .poster-copy h2 { margin-bottom: 22px; font-size: clamp(2.8rem, 6vw, 5.4rem); }
 .poster-copy > span { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: .82rem; font-weight: 700; }
+.share-error { width: fit-content; max-width: min(520px, 100%); margin-top: 12px; padding: 9px 12px; border-radius: 12px; background: rgb(150 38 32 / 82%); color: white; font-size: .76rem; }
 .poster-copy svg { width: 18px; }
 .poster-duplicate { position: absolute; top: 22px; right: 22px; display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 15px; border: 0; border-radius: 999px; background: rgb(255 255 255 / 86%); color: var(--ink); font-size: .72rem; font-weight: 700; backdrop-filter: blur(10px); }
 

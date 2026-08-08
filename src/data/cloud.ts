@@ -1,8 +1,6 @@
 import type { ContentItem, ContentKind, MediaRecord, Trip, TripDay } from '../domain/types'
-import { fixtureTrips } from './fixtures'
 import { localRepository } from './repository'
 import { getOwnerAccess, getSupabase, hasSupabaseConfig } from './supabase'
-import { retryFailedOutbox, synchronizeOutbox } from './sync'
 
 type Row = Record<string, unknown>
 
@@ -20,13 +18,12 @@ function base(row: Row) {
 }
 
 function remoteTrip(row: Row): Trip {
-  const fixture = fixtureTrips.find((trip) => trip.id === row.id)
   return {
     ...base(row), ownerId: text(row.owner_id), title: text(row.title), subtitle: text(row.subtitle),
     startDate: text(row.start_date), endDate: text(row.end_date), timezone: text(row.timezone, 'UTC'),
     baseCurrency: text(row.base_currency, 'USD'), displayCurrency: text(row.display_currency, 'USD'),
-    coverUrl: fixture?.coverUrl ?? 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82',
-    coverAlt: fixture?.coverAlt ?? 'A scenic destination landscape',
+    coverUrl: 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82',
+    coverAlt: 'A scenic destination landscape',
     status: text(row.status, 'upcoming') as Trip['status'], shareEnabled: Boolean(row.share_enabled)
   }
 }
@@ -53,7 +50,11 @@ const tableKinds: Array<[string, ContentKind]> = [
   ['warnings', 'warning'], ['expenses', 'expense']
 ]
 
-let currentBootstrap: Promise<{ state: 'local' | 'signed-out' | 'uploaded' | 'downloaded' }> | undefined
+export type CloudBootstrapResult = {
+  state: 'downloaded' | 'signed-out' | 'denied' | 'offline' | 'unavailable'
+}
+
+let currentBootstrap: Promise<CloudBootstrapResult> | undefined
 
 export function bootstrapCloudData() {
   if (!currentBootstrap) currentBootstrap = runCloudBootstrap().finally(() => { currentBootstrap = undefined })
@@ -61,32 +62,23 @@ export function bootstrapCloudData() {
 }
 
 async function runCloudBootstrap() {
-  if (!hasSupabaseConfig() || !navigator.onLine) return { state: 'local' as const }
+  if (!hasSupabaseConfig()) return { state: 'unavailable' as const }
+  if (!navigator.onLine) return { state: 'offline' as const }
   const supabase = await getSupabase()
-  if (!supabase) return { state: 'local' as const }
+  if (!supabase) return { state: 'unavailable' as const }
   const access = await getOwnerAccess()
-  if (access !== 'owner' && access !== 'editor') return { state: 'signed-out' as const }
+  if (access !== 'owner' && access !== 'editor') return { state: access as 'signed-out' | 'denied' }
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) return { state: 'signed-out' as const }
 
   const { data: remoteTrips, error: tripError } = await supabase.from('trips').select('*').is('deleted_at', null)
   if (tripError) throw tripError
   if (!remoteTrips?.length) {
-    if (access === 'editor') return { state: 'downloaded' as const }
-    await localRepository.prepareInitialCloudUpload(auth.user.id)
-    await retryFailedOutbox()
-    const result = await synchronizeOutbox()
-    if (result.failed) throw new Error('The first cloud save needs attention. Check that this account has owner access.')
-    return { state: 'uploaded' as const }
+    await localRepository.replaceFromCloud({ trips: [], days: [], items: [], media: [] })
+    return { state: 'downloaded' as const }
   }
 
   const tripIds = remoteTrips.map((trip) => text(trip.id))
-  const pending = await localRepository.pendingCount()
-  if (pending) {
-    const result = await retryFailedOutbox()
-    if (result.failed) throw new Error('Some offline changes could not be synchronized.')
-  }
-
   const [daysResult, ...itemResults] = await Promise.all([
     supabase.from('trip_days').select('*').in('trip_id', tripIds).is('deleted_at', null),
     ...tableKinds.map(([table]) => supabase.from(table).select('*').in('trip_id', tripIds).is('deleted_at', null))
