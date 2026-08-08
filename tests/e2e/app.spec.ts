@@ -1,4 +1,26 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
+
+async function expectInsideViewport(dialog: Locator, page: Page) {
+  await expect(dialog).toBeVisible()
+  const [box, viewport, metrics] = await Promise.all([
+    dialog.boundingBox(),
+    Promise.resolve(page.viewportSize()),
+    dialog.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      translateX: getComputedStyle(element).getPropertyValue('--tw-translate-x')
+    }))
+  ])
+  expect(box).not.toBeNull()
+  expect(viewport).not.toBeNull()
+  if (!box || !viewport) return
+  expect(box.x).toBeGreaterThanOrEqual(-1)
+  expect(box.y).toBeGreaterThanOrEqual(-1)
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1)
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1)
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth)
+  if (viewport.width <= 767) expect(metrics.translateX.trim()).toBe('0')
+}
 
 test('Japan fixture includes the planned Tokyo days from September 18 to 22', async ({ page }) => {
   await page.goto('#/trip/trip-japan-2026')
@@ -127,6 +149,56 @@ test('primary mobile controls meet the 44px target', async ({ page }) => {
     expect(box?.width).toBeGreaterThanOrEqual(44)
   }
 })
+
+for (const viewport of [
+  { name: 'phone', width: 375, height: 812 },
+  { name: 'desktop', width: 1440, height: 1000 }
+]) {
+  test(`shared editors stay fully visible on ${viewport.name}`, async ({ page }, testInfo) => {
+    await page.setViewportSize(viewport)
+
+    await page.goto('#/trip/trip-portugal-2026')
+    await page.getByRole('button', { name: 'Edit trip' }).click()
+    await page.getByRole('button', { name: 'Add item' }).click()
+    await expectInsideViewport(page.getByRole('dialog', { name: 'What belongs in the plan?' }), page)
+    if (viewport.name === 'phone') await page.screenshot({ path: testInfo.outputPath('item-editor.png') })
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: 'Edit day details' }).click()
+    await expectInsideViewport(page.getByRole('dialog', { name: 'Edit day' }), page)
+    await page.keyboard.press('Escape')
+
+    await page.goto('#/trip/trip-japan-2026/budget')
+    await page.getByRole('button', { name: 'Edit trip' }).click()
+    await page.getByRole('button', { name: 'Set budgets' }).click()
+    await expectInsideViewport(page.getByRole('dialog', { name: 'Set the guardrails' }), page)
+    if (viewport.name === 'phone') await page.screenshot({ path: testInfo.outputPath('budget-editor.png') })
+    await page.keyboard.press('Escape')
+
+    await page.goto('#/trip/trip-japan-2026/more')
+    await page.getByRole('button', { name: 'Edit trip' }).click()
+    await page.getByRole('button', { name: 'Trip settings' }).click()
+    await expectInsideViewport(page.getByRole('dialog', { name: 'Settings' }), page)
+    await page.keyboard.press('Escape')
+
+    await page.goto('#/')
+    await page.getByRole('button', { name: 'New trip' }).click()
+    await expectInsideViewport(page.getByRole('dialog', { name: 'Create a trip' }), page)
+  })
+
+  test(`all primary pages avoid horizontal clipping on ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize(viewport)
+    for (const route of [
+      '#/',
+      '#/trip/trip-portugal-2026',
+      '#/trip/trip-portugal-2026/bookings',
+      '#/trip/trip-portugal-2026/budget',
+      '#/trip/trip-portugal-2026/more'
+    ]) {
+      await page.goto(route)
+      await expect(page.locator('body')).toHaveJSProperty('scrollWidth', viewport.width)
+    }
+  })
+}
 
 test('reduced motion preference disables long transitions', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
