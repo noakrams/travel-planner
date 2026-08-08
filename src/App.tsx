@@ -4,6 +4,8 @@ import { TripsPage } from './pages/TripsPage'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { getSupabase } from './data/supabase'
 import { CloudDataGate } from './components/CloudDataGate'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { ToastProvider } from '@/components/ui/toast'
 
 const PlanPage = lazy(() => import('./pages/PlanPage').then((module) => ({ default: module.PlanPage })))
 const SharedTripPage = lazy(() => import('./pages/SharedTripPage').then((module) => ({ default: module.SharedTripPage })))
@@ -12,11 +14,11 @@ const BookingsPage = lazy(() => import('./pages/BookingsPage').then((module) => 
 const MorePage = lazy(() => import('./pages/MorePage').then((module) => ({ default: module.MorePage })))
 
 export function App() {
-  return <><OAuthReturn /><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus() }}>Skip to main content</a><div id="main-content" tabIndex={-1}><Routes>
+  return <TooltipProvider delayDuration={350}><ToastProvider><OAuthReturn /><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus() }}>Skip to main content</a><div id="main-content" tabIndex={-1}><Routes>
       <Route path="/share/:shareToken" element={<Suspense fallback={<PageSkeleton />}><SharedTripPage /></Suspense>} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="*" element={<CloudDataGate><PrivateRoutes /></CloudDataGate>} />
-    </Routes></div><UpdatePrompt /></>
+    </Routes></div><UpdatePrompt /></ToastProvider></TooltipProvider>
 }
 
 function PrivateRoutes() {

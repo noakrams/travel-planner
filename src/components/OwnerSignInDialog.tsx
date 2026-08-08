@@ -1,13 +1,15 @@
-import * as Dialog from '@radix-ui/react-dialog'
 import { GoogleLogo } from '@phosphor-icons/react/GoogleLogo'
-import { X } from '@phosphor-icons/react/X'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { signInWithGoogle } from '../data/supabase'
 import type { OwnerAccess } from '../hooks/useOwnerAccess'
 
 export function OwnerSignInDialog({ open, onOpenChange, access }: { open: boolean; onOpenChange: (open: boolean) => void; access: OwnerAccess }) {
   const [starting, setStarting] = useState(false)
   const [message, setMessage] = useState('')
+  const denied = access === 'denied'
+  const unavailable = access === 'unavailable'
   const continueWithGoogle = async () => {
     setStarting(true)
     setMessage('')
@@ -17,20 +19,11 @@ export function OwnerSignInDialog({ open, onOpenChange, access }: { open: boolea
       setStarting(false)
     }
   }
-  const denied = access === 'denied'
-  const unavailable = access === 'unavailable'
-  return <Dialog.Root open={open} onOpenChange={onOpenChange}>
-    <Dialog.Portal>
-      <Dialog.Overlay className="dialog-overlay" />
-      <Dialog.Content className="confirm-dialog owner-sign-in">
-        <div className="owner-sign-in-heading">
-          <div><p className="eyebrow">Editor access</p><Dialog.Title>Edit trip</Dialog.Title></div>
-          <Dialog.Close className="icon-button" aria-label="Close"><X /></Dialog.Close>
-        </div>
-        <Dialog.Description>{denied ? 'This Google account can keep viewing, but it is not approved to edit this trip.' : unavailable ? 'Editor access could not be checked. Check your connection and try again.' : 'Viewing is open to everyone. Continue with an approved Google account to make changes.'}</Dialog.Description>
-        {!unavailable ? <button className="button google" type="button" disabled={starting || access === 'checking'} onClick={continueWithGoogle}><GoogleLogo weight="bold" />{starting ? 'Opening Google…' : denied ? 'Use another Google account' : 'Continue with Google'}</button> : null}
-        {message ? <p className="auth-message" role="status">{message}</p> : null}
-      </Dialog.Content>
-    </Dialog.Portal>
-  </Dialog.Root>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="confirm-dialog owner-sign-in">
+      <DialogHeader><p className="eyebrow">Editor access</p><DialogTitle>Edit trip</DialogTitle><DialogDescription>{denied ? 'This Google account can keep viewing, but it is not approved to edit this trip.' : unavailable ? 'Editor access could not be checked. Check your connection and try again.' : 'Viewing is open to everyone. Continue with an approved Google account to make changes.'}</DialogDescription></DialogHeader>
+      {!unavailable ? <Button className="google" type="button" disabled={starting || access === 'checking'} onClick={continueWithGoogle}><GoogleLogo weight="bold" />{starting ? 'Opening Google…' : denied ? 'Use another Google account' : 'Continue with Google'}</Button> : null}
+      {message ? <p className="auth-message" role="status">{message}</p> : null}
+    </DialogContent>
+  </Dialog>
 }

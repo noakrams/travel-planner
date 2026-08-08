@@ -1,4 +1,5 @@
 import { cpSync } from 'node:fs'
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -8,6 +9,9 @@ const basePath = process.env.VITE_BASE_PATH ?? '/travel-planner/'
 
 export default defineConfig({
   base: basePath,
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) }
+  },
   plugins: [
     {
       name: 'preserve-legacy-japan-pages',
@@ -24,8 +28,8 @@ export default defineConfig({
         name: 'Roam Travel Planner',
         short_name: 'Roam',
         description: 'A calm, offline-ready personal travel planner.',
-        theme_color: '#f7f5f1',
-        background_color: '#f7f5f1',
+        theme_color: '#17211d',
+        background_color: '#f1f5f2',
         display: 'standalone',
         orientation: 'any',
         start_url: `${basePath}#/`,

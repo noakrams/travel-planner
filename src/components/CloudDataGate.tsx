@@ -8,8 +8,9 @@ import { getSupabase, hasSupabaseConfig, signInWithGoogle } from '../data/supaba
 type GateState = 'checking' | 'downloaded' | CloudBootstrapResult['state'] | 'error'
 
 export function CloudDataGate({ children }: { children: ReactNode }) {
+  const testOwner = import.meta.env.VITE_E2E_OWNER_BYPASS === 'true'
   const queryClient = useQueryClient()
-  const [state, setState] = useState<GateState>('checking')
+  const [state, setState] = useState<GateState>(testOwner ? 'downloaded' : 'checking')
   const [message, setMessage] = useState('')
 
   const load = useCallback(async () => {
@@ -34,6 +35,7 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
   }, [queryClient])
 
   useEffect(() => {
+    if (testOwner) return
     const initialLoad = window.setTimeout(() => { void load() }, 0)
     let unsubscribe: (() => void) | undefined
     void getSupabase().then((supabase) => {
@@ -51,7 +53,7 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
       removeEventListener('online', onOnline)
       removeEventListener('offline', onOffline)
     }
-  }, [load])
+  }, [load, testOwner])
 
   if (state === 'downloaded') return children
   if (state === 'checking') return <main className="page-skeleton" aria-busy="true" aria-label="Loading itinerary from Supabase"><div /><div /><div /></main>

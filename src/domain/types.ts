@@ -1,5 +1,7 @@
 export type SyncState = 'saving' | 'saved' | 'waiting' | 'attention'
 export type TripStatus = 'upcoming' | 'active' | 'archived'
+export type CurrencyCode = 'JPY' | 'ILS' | 'USD' | 'EUR'
+export type BudgetCategory = 'accommodation' | 'transportation' | 'food' | 'activities' | 'shopping' | 'other'
 export type ContentKind =
   | 'activity'
   | 'booking'
@@ -28,7 +30,10 @@ export interface Trip extends BaseRecord {
   endDate: string
   timezone: string
   baseCurrency: string
-  displayCurrency: string
+  displayCurrency: CurrencyCode
+  budgetAmount: number
+  budgetCurrency: CurrencyCode
+  categoryBudgets: Partial<Record<BudgetCategory, number>>
   coverUrl: string
   coverAlt: string
   status: TripStatus
@@ -62,7 +67,8 @@ export interface ContentItem extends BaseRecord {
   imageAlt?: string
   plannedAmount?: number
   actualAmount?: number
-  currency?: string
+  currency?: CurrencyCode
+  budgetCategory?: BudgetCategory
   occurredOn?: string
   paid?: boolean
 }
@@ -109,4 +115,13 @@ export const contentKindLabels: Record<ContentKind, string> = {
   warning: 'Warning',
   route: 'Route stop',
   expense: 'Expense'
+}
+
+export const budgetCategoryLabels: Record<BudgetCategory, string> = {
+  accommodation: 'Accommodation',
+  transportation: 'Transportation',
+  food: 'Food & drink',
+  activities: 'Activities',
+  shopping: 'Shopping',
+  other: 'Other'
 }

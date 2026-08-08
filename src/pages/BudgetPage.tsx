@@ -1,33 +1,92 @@
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { CollectionPage } from '../components/CollectionPage'
+import { Bed, BowlFood, Compass, DotsThreeCircle, PencilSimple, ShoppingBag, Train } from '@phosphor-icons/react'
+import { useState, type ComponentType } from 'react'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { BudgetSettingsDialog } from '../components/BudgetSettingsDialog'
 import { TripLayout } from '../components/TripLayout'
-import type { ContentItem } from '../domain/types'
+import { convertCurrency, fixedExchangeRates, formatCurrency, supportedCurrencies } from '../domain/currency'
+import type { BudgetCategory, ContentItem, CurrencyCode, Trip } from '../domain/types'
+import { budgetCategoryLabels } from '../domain/types'
+import { useTravelMutations } from '../hooks/useTravelData'
+import { buildBudgetBreakdown } from '../domain/budget'
 
-const colors = ['#68705b', '#b49a78', '#4b4339', '#bd7d68', '#7d8e96']
-
-export default function BudgetPage() {
-  return <TripLayout>{({ trip, items, editMode }) => {
-    const expenses = items.filter((item) => item.kind === 'expense')
-    const planned = expenses.reduce((sum, item) => sum + (item.plannedAmount ?? 0), 0)
-    const actual = expenses.reduce((sum, item) => sum + (item.actualAmount ?? 0), 0)
-    const data = groupByKind(expenses)
-    return <>
-      <section className="budget-page"><div className="collection-heading"><div><p className="eyebrow">{trip.title}</p><h2>Planned, then lived</h2><p>Costs stay in the currency you entered. Roam never changes rates behind your back.</p></div></div>
-        <div className="budget-summary"><div><span>Planned</span><strong>{trip.displayCurrency} {planned.toLocaleString()}</strong></div><div><span>Actual</span><strong>{trip.displayCurrency} {actual.toLocaleString()}</strong></div><div><span>Remaining</span><strong>{trip.displayCurrency} {(planned - actual).toLocaleString()}</strong></div></div>
-        <div className="budget-visual"><div className="chart-wrap" aria-hidden="true"><ResponsiveContainer width="100%" height={280}><PieChart><Pie data={data} dataKey="value" nameKey="name" innerRadius={72} outerRadius={105} paddingAngle={2}>{data.map((entry, index) => <Cell key={entry.name} fill={colors[index % colors.length]} />)}</Pie><Tooltip formatter={(value) => `${trip.displayCurrency} ${Number(value).toLocaleString()}`} /><Legend /></PieChart></ResponsiveContainer><div className="chart-center"><small>spent</small><strong>{actual ? Math.round((actual / Math.max(planned, 1)) * 100) : 0}%</strong></div></div>
-          <table><caption>Budget by category</caption><thead><tr><th>Category</th><th>Planned</th><th>Actual</th></tr></thead><tbody>{data.map((entry) => <tr key={entry.name}><th>{entry.name}</th><td>{trip.displayCurrency} {entry.planned.toLocaleString()}</td><td>{trip.displayCurrency} {entry.value.toLocaleString()}</td></tr>)}</tbody></table></div>
-      </section>
-      <CollectionPage trip={trip} items={expenses} kinds={['expense']} title="Expenses" intro="Keep planned and actual amounts together without automatic exchange-rate changes." editMode={editMode} />
-    </>
-  }}</TripLayout>
+const categoryIcons: Record<BudgetCategory, ComponentType<{ size?: number; 'aria-hidden'?: boolean }>> = {
+  accommodation: Bed,
+  transportation: Train,
+  food: BowlFood,
+  activities: Compass,
+  shopping: ShoppingBag,
+  other: DotsThreeCircle
 }
 
-function groupByKind(items: ContentItem[]) {
-  const grouped = new Map<string, { name: string; value: number; planned: number }>()
-  for (const item of items) {
-    const name = item.kind[0].toUpperCase() + item.kind.slice(1)
-    const current = grouped.get(name) ?? { name, value: 0, planned: 0 }
-    current.value += item.actualAmount ?? 0; current.planned += item.plannedAmount ?? 0; grouped.set(name, current)
+const categoryColors: Record<BudgetCategory, string> = {
+  accommodation: 'var(--route)',
+  transportation: 'var(--signal-dark)',
+  food: 'var(--stamp)',
+  activities: 'var(--sky)',
+  shopping: 'var(--plum)',
+  other: 'var(--atlas-muted)'
+}
+
+export default function BudgetPage() {
+  return <TripLayout>{({ trip, items, editMode }) => <BudgetContent trip={trip} items={items} editMode={editMode} />}</TripLayout>
+}
+
+function BudgetContent({ trip, items, editMode }: { trip: Trip; items: ContentItem[]; editMode: boolean }) {
+  const mutations = useTravelMutations(trip.id)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [displayCurrency, setDisplayCurrency] = useState<CurrencyCode>(trip.displayCurrency)
+  const breakdown = buildBudgetBreakdown(items, trip, displayCurrency)
+  const planned = breakdown.reduce((sum, entry) => sum + entry.cost, 0)
+  const totalBudget = convertCurrency(trip.budgetAmount, trip.budgetCurrency, displayCurrency)
+  const remaining = totalBudget - planned
+  const progress = totalBudget > 0 ? Math.min(100, (planned / totalBudget) * 100) : 0
+  const pricedItems = items.filter((item) => item.plannedAmount !== undefined && item.currency).length
+
+  const changeDisplayCurrency = (value: string) => {
+    const currency = value as CurrencyCode
+    setDisplayCurrency(currency)
+    if (editMode && currency !== trip.displayCurrency) mutations.saveTrip.mutate({ ...trip, displayCurrency: currency })
   }
-  return Array.from(grouped.values())
+
+  return <>
+    <section className="budget-page">
+      <header className="budget-heading">
+        <div><p className="eyebrow">{trip.title} · Budget</p><h2>Know what the plan costs.</h2><p>Prices stay in the currency you entered. Roam converts the overview with one fixed rate snapshot.</p></div>
+        <div className="budget-heading-actions">
+          <div className="display-currency"><label htmlFor="display-currency">Show totals in</label><Select value={displayCurrency} onValueChange={changeDisplayCurrency}><SelectTrigger id="display-currency"><SelectValue /></SelectTrigger><SelectContent>{supportedCurrencies.map((currency) => <SelectItem key={currency} value={currency}>{currency}</SelectItem>)}</SelectContent></Select></div>
+          {editMode ? <Button onClick={() => setSettingsOpen(true)}><PencilSimple aria-hidden="true" />Set budgets</Button> : null}
+        </div>
+      </header>
+
+      <section className="budget-hero" aria-label="Trip budget summary">
+        <div className="budget-total">
+          <span>Total trip budget</span>
+          <strong>{totalBudget > 0 ? formatCurrency(totalBudget, displayCurrency) : 'Not set'}</strong>
+          <div className="budget-total-progress"><Progress value={progress} aria-label={`${Math.round(progress)} percent of trip budget assigned`} /><div><span>{Math.round(progress)}% assigned</span><span>{pricedItems} priced plan items</span></div></div>
+        </div>
+        <div className="budget-metric"><span>Plan cost</span><strong>{formatCurrency(planned, displayCurrency)}</strong><small>From every priced item</small></div>
+        <div className={`budget-metric ${remaining < 0 ? 'is-over' : ''}`}><span>{remaining < 0 ? 'Over budget' : 'Still available'}</span><strong>{totalBudget > 0 ? formatCurrency(Math.abs(remaining), displayCurrency) : '—'}</strong><small>{totalBudget > 0 ? remaining < 0 ? 'Adjust the plan or limits' : 'Not assigned yet' : 'Set a trip budget to compare'}</small></div>
+      </section>
+
+      <section className="budget-breakdown" aria-labelledby="category-heading">
+        <div className="budget-section-heading"><div><p className="eyebrow">Categories</p><h3 id="category-heading">Where the budget goes</h3></div><p>Category limits use {trip.budgetCurrency}; values below are shown in {displayCurrency}.</p></div>
+        <div className="category-list">{breakdown.map((entry) => {
+          const Icon = categoryIcons[entry.category]
+          const ratio = entry.limit > 0 ? Math.min(100, (entry.cost / entry.limit) * 100) : 0
+          const left = entry.limit - entry.cost
+          return <article className="category-row" key={entry.category} style={{ '--category-color': categoryColors[entry.category] } as React.CSSProperties}>
+            <div className="category-icon"><Icon size={21} aria-hidden={true} /></div>
+            <div className="category-copy"><strong>{budgetCategoryLabels[entry.category]}</strong><span>{entry.count} {entry.count === 1 ? 'item' : 'items'}</span></div>
+            <div className="category-progress"><Progress value={ratio} /><div><span>{formatCurrency(entry.cost, displayCurrency)} planned</span><span>{entry.limit > 0 ? `of ${formatCurrency(entry.limit, displayCurrency)}` : 'No category limit'}</span></div></div>
+            <div className={`category-remaining ${left < 0 ? 'is-over' : ''}`}><strong>{entry.limit > 0 ? formatCurrency(Math.abs(left), displayCurrency) : '—'}</strong><span>{entry.limit > 0 ? left < 0 ? 'over' : 'left' : 'unlimited'}</span></div>
+          </article>
+        })}</div>
+      </section>
+
+      <p className="rate-note">Fixed conversion snapshot: {fixedExchangeRates.effectiveDate} · {fixedExchangeRates.source}. Original item prices are never rewritten.</p>
+    </section>
+    {settingsOpen ? <BudgetSettingsDialog trip={trip} open onOpenChange={setSettingsOpen} onSave={mutations.saveTrip.mutateAsync} /> : null}
+  </>
 }

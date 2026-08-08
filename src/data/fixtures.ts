@@ -16,6 +16,9 @@ export const fixtureTrips: Trip[] = [
     timezone: 'Europe/Lisbon',
     baseCurrency: 'EUR',
     displayCurrency: 'EUR',
+    budgetAmount: 3500,
+    budgetCurrency: 'EUR',
+    categoryBudgets: { accommodation: 1200, transportation: 1100, food: 700, activities: 350, shopping: 100, other: 50 },
     coverUrl: fixtureImage('lisbon-street.jpg'),
     coverAlt: 'Lisbon rooftops descending toward the Tagus river',
     status: 'upcoming',
@@ -32,6 +35,9 @@ export const fixtureTrips: Trip[] = [
     timezone: 'Asia/Tokyo',
     baseCurrency: 'JPY',
     displayCurrency: 'JPY',
+    budgetAmount: 900000,
+    budgetCurrency: 'JPY',
+    categoryBudgets: { accommodation: 350000, transportation: 200000, food: 150000, activities: 100000, shopping: 50000, other: 50000 },
     coverUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1800&q=82',
     coverAlt: 'Tokyo avenue at dusk with illuminated signs',
     status: 'upcoming',
@@ -86,19 +92,19 @@ export const fixtureItems: ContentItem[] = [
     ...base,
     id: 'item-dinner', tripId: 'trip-portugal-2026', kind: 'booking', title: 'Dinner at Prado',
     description: 'Window table requested. Vegetarian tasting menu available.', startTime: '20:30', provider: 'Prado',
-    confirmationCode: 'LIS-4821', status: 'confirmed', position: 0, plannedAmount: 120, actualAmount: 0, currency: 'EUR'
+    confirmationCode: 'LIS-4821', status: 'confirmed', position: 0, plannedAmount: 120, currency: 'EUR', budgetCategory: 'food'
   },
   {
     ...base,
     id: 'item-hotel', tripId: 'trip-portugal-2026', kind: 'stay', title: 'Memmo Alfama',
     description: 'Five nights, breakfast included.', location: 'Alfama', provider: 'Memmo Hotels', status: 'confirmed',
-    position: 1, plannedAmount: 940, actualAmount: 940, currency: 'EUR'
+    position: 1, plannedAmount: 940, currency: 'EUR', budgetCategory: 'accommodation'
   },
   {
     ...base,
     id: 'item-train', tripId: 'trip-portugal-2026', kind: 'transport', title: 'Alfa Pendular to Porto',
     description: 'Seats 8A and 8B. Arrive 20 minutes early.', provider: 'Comboios de Portugal', status: 'confirmed',
-    position: 2, plannedAmount: 68, actualAmount: 68, currency: 'EUR'
+    position: 2, plannedAmount: 68, currency: 'EUR', budgetCategory: 'transportation'
   },
   {
     ...base,
@@ -111,15 +117,15 @@ export const fixtureItems: ContentItem[] = [
   { ...base, id: 'item-place', tripId: 'trip-portugal-2026', kind: 'place', title: 'Museu Nacional do Azulejo', description: 'Allow two hours and leave time for the cloister.', location: 'Lisbon', position: 0 },
   { ...base, id: 'item-warning', tripId: 'trip-portugal-2026', kind: 'warning', title: 'Steep streets after rain', description: 'The calçada stones become slippery. Wear shoes with grip.', position: 0 },
   { ...base, id: 'item-note', tripId: 'trip-portugal-2026', kind: 'note', title: 'Packing note', description: 'Light rain layer, small day bag, and room for ceramics.', position: 0 },
-  { ...base, id: 'expense-flight', tripId: 'trip-portugal-2026', kind: 'expense', title: 'Flights', description: 'Round trip for two', position: 8, plannedAmount: 900, actualAmount: 860, currency: 'EUR', paid: true, occurredOn: '2026-07-12' },
-  { ...base, id: 'expense-food', tripId: 'trip-portugal-2026', kind: 'expense', title: 'Food allowance', description: 'Daily shared budget', position: 9, plannedAmount: 650, actualAmount: 172, currency: 'EUR', paid: false },
-  { ...base, id: 'japan-arrival', tripId: 'trip-japan-2026', dayId: 'day-japan-1', kind: 'transport', title: 'Land at Narita Airport', description: 'Take the Narita Express directly to Shibuya, about 75 minutes. A taxi from Narita is not worth the cost after the long flight.', startTime: '18:25', location: 'Narita International Airport', status: 'confirmed', position: 0 },
-  { ...base, id: 'japan-checkin-shibuya', tripId: 'trip-japan-2026', dayId: 'day-japan-1', kind: 'stay', title: 'Check in at all day place shibuya', description: 'No plans tonight. Use the ground-floor bakery-bar or a nearby late-night ramen counter only if hungry.', startTime: '21:00', location: 'Shibuya', status: 'recommended', position: 1 },
+  { ...base, id: 'expense-flight', tripId: 'trip-portugal-2026', kind: 'expense', title: 'Flights', description: 'Round trip for two', position: 8, plannedAmount: 900, currency: 'EUR', budgetCategory: 'transportation', paid: true, occurredOn: '2026-07-12' },
+  { ...base, id: 'expense-food', tripId: 'trip-portugal-2026', kind: 'expense', title: 'Food allowance', description: 'Daily shared budget', position: 9, plannedAmount: 650, currency: 'EUR', budgetCategory: 'food', paid: false },
+  { ...base, id: 'japan-arrival', tripId: 'trip-japan-2026', dayId: 'day-japan-1', kind: 'transport', title: 'Land at Narita Airport', description: 'Take the Narita Express directly to Shibuya, about 75 minutes. A taxi from Narita is not worth the cost after the long flight.', startTime: '18:25', location: 'Narita International Airport', status: 'confirmed', position: 0, plannedAmount: 6500, currency: 'JPY', budgetCategory: 'transportation' },
+  { ...base, id: 'japan-checkin-shibuya', tripId: 'trip-japan-2026', dayId: 'day-japan-1', kind: 'stay', title: 'Check in at all day place shibuya', description: 'No plans tonight. Use the ground-floor bakery-bar or a nearby late-night ramen counter only if hungry.', startTime: '21:00', location: 'Shibuya', status: 'recommended', position: 1, plannedAmount: 128000, currency: 'JPY', budgetCategory: 'accommodation' },
 
   { ...base, id: 'japan-hikiniku-crossing', tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind: 'food', title: 'Hikiniku to Come, then Shibuya Crossing', description: 'Register online for the 11:00 seating. The fixed hamburger-steak set has no chicken or vegetable substitute; meet at Hachikō afterwards if Noa has brunch elsewhere.', startTime: '11:00', location: 'Shibuya', status: 'register', position: 0 },
   { ...base, id: 'japan-parco', tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind: 'place', title: 'Nintendo Tokyo, Pokémon Center, and Jump Shop', description: 'All three are on Shibuya PARCO’s sixth floor. Expect a queue during Silver Week.', startTime: '13:00', location: 'Shibuya PARCO', status: 'recommended', position: 1 },
   { ...base, id: 'japan-miyashita', tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind: 'place', title: 'Pause on the Miyashita Park roof', description: 'Coffee, greenery, seating, and a skate park above the busy streets—a low-effort jet-lag break.', startTime: '15:00', location: 'Miyashita Park', status: 'recommended', position: 2 },
-  { ...base, id: 'japan-shibuya-sky', tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind: 'booking', title: 'Shibuya Sky at sunset', description: 'Open-air 360° views as daylight fades and the city switches on below.', startTime: '16:45', location: 'Shibuya Scramble Square', status: 'booked', position: 3 },
+  { ...base, id: 'japan-shibuya-sky', tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind: 'booking', title: 'Shibuya Sky at sunset', description: 'Open-air 360° views as daylight fades and the city switches on below.', startTime: '16:45', location: 'Shibuya Scramble Square', status: 'booked', position: 3, plannedAmount: 6000, currency: 'JPY', budgetCategory: 'activities' },
   { ...base, id: 'japan-shibuya-yokocho', tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind: 'food', title: 'Shibuya Yokochō and Nonbei Yokochō', description: 'Dinner in the lively regional food alley, then a nightcap in the tiny postwar bar lane beside the JR tracks.', startTime: '19:00', location: 'Shibuya', status: 'recommended', position: 4 },
 
   { ...base, id: 'japan-meiji-jingu', tripId: 'trip-japan-2026', dayId: 'day-japan-3', kind: 'place', title: 'Meiji Jingū before the crowds', description: 'Walk through the forested approach to the Shintō shrine. Go early enough to keep the holiday morning serene.', startTime: '09:30', location: 'Meiji Jingū', status: 'must-do', position: 0 },
@@ -131,7 +137,7 @@ export const fixtureItems: ContentItem[] = [
   { ...base, id: 'japan-golden-gai-warning', tripId: 'trip-japan-2026', dayId: 'day-japan-3', kind: 'warning', title: 'Golden Gai etiquette', description: 'Many bars seat only 5–8 and charge a ¥500–2,000 cover. Choose doors with an English menu or tourists-welcome sign and skip regulars-only rooms.', position: 6 },
 
   { ...base, id: 'japan-slow-morning', tripId: 'trip-japan-2026', dayId: 'day-japan-4', kind: 'note', title: 'Keep the morning empty', description: 'Sleep, coffee, or wander without an agenda. Nothing is scheduled before the afternoon slot on purpose.', startTime: '11:00', status: 'recommended', position: 0 },
-  { ...base, id: 'japan-teamlab', tripId: 'trip-japan-2026', dayId: 'day-japan-4', kind: 'booking', title: 'teamLab Borderless', description: 'Allow 2–3 hours for the mapless immersive galleries. The artworks move between spaces and respond to visitors.', startTime: '14:00', location: 'Azabudai Hills', status: 'booked', position: 1 },
+  { ...base, id: 'japan-teamlab', tripId: 'trip-japan-2026', dayId: 'day-japan-4', kind: 'booking', title: 'teamLab Borderless', description: 'Allow 2–3 hours for the mapless immersive galleries. The artworks move between spaces and respond to visitors.', startTime: '14:00', location: 'Azabudai Hills', status: 'booked', position: 1, plannedAmount: 9600, currency: 'JPY', budgetCategory: 'activities' },
   { ...base, id: 'japan-tokyo-tower', tripId: 'trip-japan-2026', dayId: 'day-japan-4', kind: 'place', title: 'Tokyo Tower at dusk', description: 'See the tower light up from the Azabudai Hills gardens for free; go up only if the queue is short.', startTime: '17:15', location: 'Tokyo Tower', status: 'recommended', position: 2 },
   { ...base, id: 'japan-bird-land', tripId: 'trip-japan-2026', dayId: 'day-japan-4', kind: 'booking', title: 'Yakitori omakase at Bird Land', description: 'A booked all-chicken dinner in Ginza, turning charcoal-grilled skewers into a refined omakase meal.', startTime: '19:00', location: 'Ginza', status: 'booked', position: 3 },
   { ...base, id: 'japan-centifolia', tripId: 'trip-japan-2026', dayId: 'day-japan-4', kind: 'booking', title: 'A final cocktail at Bar Centifolia', description: 'Reserve around 21:15–21:30 and allow up to 90 minutes for one of the theatrical signature cocktails.', startTime: '21:15', location: 'Azabu-Jūban', status: 'reserve', position: 4 },

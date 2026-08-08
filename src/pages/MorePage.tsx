@@ -33,8 +33,12 @@ function MoreContent({ trip, items, editMode }: { trip: Trip; items: ContentItem
   const rotateLink = async () => {
     const bytes = crypto.getRandomValues(new Uint8Array(24))
     const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
-    await mutations.saveTrip.mutateAsync({ ...trip, shareEnabled: true, shareToken: token })
-    setMessage('A new unlisted link is ready. The old link no longer opens this trip.')
+    try {
+      await mutations.saveTrip.mutateAsync({ ...trip, shareEnabled: true, shareToken: token })
+      setMessage('A new unlisted link is ready. The old link no longer opens this trip.')
+    } catch {
+      // The shared mutation toast provides the error details.
+    }
   }
   return <>
     <CollectionPage trip={trip} items={items} kinds={['place', 'food', 'note', 'warning', 'route']} title="More to remember" intro="Saved places, food, warnings, notes, and the route—kept out of the day plan until you need them." editMode={editMode} />
@@ -45,6 +49,6 @@ function MoreContent({ trip, items, editMode }: { trip: Trip; items: ContentItem
       {editMode ? <button className="button secondary" onClick={rotateLink}><ArrowClockwise />Rotate share link</button> : null}
       {trip.shareEnabled ? <a className="button secondary" href={`#/share/${trip.shareToken}`}><LinkSimple />Preview shared trip</a> : null}
       {editMode ? <button className="button secondary" onClick={() => setSettingsOpen(true)}><Gear />Trip settings</button> : null}
-    </div>{message ? <p className="inline-message" role="status">{message}</p> : null}</section><TripSettingsDialog trip={trip} open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </div>{message ? <p className="inline-message" role="status">{message}</p> : null}</section>{settingsOpen ? <TripSettingsDialog trip={trip} open onOpenChange={setSettingsOpen} /> : null}
   </>
 }

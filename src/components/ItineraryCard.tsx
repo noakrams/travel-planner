@@ -4,6 +4,8 @@ import { BidiText } from './BidiText'
 import { ItemActions } from './ItemActions'
 import type { ContentItem } from '../domain/types'
 import { CachedImage } from './CachedImage'
+import { formatCurrency, inferBudgetCategory } from '../domain/currency'
+import { budgetCategoryLabels } from '../domain/types'
 
 export function ItineraryCard({ item, editMode, onEdit, onDuplicate, onMove, onDelete }: {
   item: ContentItem; editMode: boolean; onEdit: () => void; onDuplicate: () => void; onMove: (delta: -1 | 1) => void; onDelete: () => void
@@ -14,7 +16,7 @@ export function ItineraryCard({ item, editMode, onEdit, onDuplicate, onMove, onD
       <div className="card-kicker"><span>{item.startTime ?? item.kind}</span>{item.status ? <span className="status-dot">{item.status}</span> : null}</div>
       <BidiText as="h3" value={item.title}>{item.title}</BidiText>
       <BidiText as="p" value={item.description}>{item.description}</BidiText>
-      {item.location ? <div className="card-location"><MapPin size={17} aria-hidden="true" /><BidiText value={item.location}>{item.location}</BidiText>{item.mapsUrl ? <a href={item.mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${item.location} in Google Maps`}><ArrowSquareOut size={17} /></a> : null}</div> : null}
+      <div className="card-footer">{item.location ? <div className="card-location"><MapPin size={17} aria-hidden="true" /><BidiText value={item.location}>{item.location}</BidiText>{item.mapsUrl ? <a href={item.mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${item.location} in Google Maps`}><ArrowSquareOut size={17} /></a> : null}</div> : <span />}{item.plannedAmount !== undefined && item.currency ? <span className="card-cost"><small>{budgetCategoryLabels[inferBudgetCategory(item)]}</small>{formatCurrency(item.plannedAmount, item.currency)}</span> : null}</div>
     </div>
     {editMode ? <ItemActions item={item} onEdit={onEdit} onDuplicate={onDuplicate} onMove={onMove} onDelete={onDelete} /> : null}
   </article>

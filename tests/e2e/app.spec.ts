@@ -19,6 +19,23 @@ test('owner can create a mixed-direction itinerary item', async ({ page }) => {
   const title = page.getByRole('heading', { name: 'ארוחת ערב at Prado' })
   await expect(title).toBeVisible()
   await expect(title).toHaveAttribute('dir', 'rtl')
+  const saveToast = page.getByRole('status').filter({ hasText: 'Plan item saved' })
+  await expect(saveToast).toBeVisible()
+  const toastBox = await saveToast.boundingBox()
+  const viewport = page.viewportSize()
+  expect(toastBox).not.toBeNull()
+  expect(viewport).not.toBeNull()
+  const navigation = page.locator('.bottom-nav')
+  const navigationPosition = await navigation.evaluate((element) => getComputedStyle(element).position)
+  if (toastBox && navigationPosition === 'fixed') {
+    const navigationBox = await navigation.boundingBox()
+    expect(navigationBox).not.toBeNull()
+    if (navigationBox && navigationBox.height > navigationBox.width) expect(toastBox.x + toastBox.width).toBeLessThan(navigationBox.x)
+    else if (navigationBox) expect(toastBox.y + toastBox.height).toBeLessThan(navigationBox.y)
+  } else if (toastBox && viewport) {
+    expect(viewport.width - (toastBox.x + toastBox.width)).toBeLessThanOrEqual(24)
+    expect(toastBox.y + toastBox.height).toBeLessThan(viewport.height - 90)
+  }
 })
 
 test('cached trip remains readable and edits queue offline', async ({ page, context, browserName }) => {
@@ -54,11 +71,36 @@ test('a saved itinerary edit survives closing and reopening the tab', async ({ p
   await expect(reopened.getByLabel('Arrive — and nothing else').getByRole('heading', { name: 'Land at Narita Airport — saved' })).toBeVisible()
 })
 
-test('budget chart has a table alternative', async ({ page }) => {
+test('budget overview groups costs and can switch display currency', async ({ page }) => {
   await page.goto('#/trip/trip-portugal-2026/budget')
-  await expect(page.getByRole('heading', { name: 'Planned, then lived' })).toBeVisible()
-  await expect(page.getByRole('table', { name: 'Budget by category' })).toBeVisible()
-  await expect(page.locator('.budget-summary strong').first()).toHaveText('EUR 1,550')
+  await expect(page.getByRole('heading', { name: 'Know what the plan costs.' })).toBeVisible()
+  const summary = page.getByRole('region', { name: 'Trip budget summary' })
+  await expect(summary).toContainText('€3,500')
+  await expect(summary).toContainText('€2,678')
+  await expect(page.getByRole('heading', { name: 'Where the budget goes' })).toBeVisible()
+  await expect(page.getByText('Accommodation', { exact: true })).toBeVisible()
+  await expect(page.getByText('Transportation', { exact: true })).toBeVisible()
+
+  await page.getByLabel('Show totals in').click()
+  await page.getByRole('option', { name: 'USD' }).click()
+  await expect(summary).toContainText('$4,013.33')
+  await expect(summary).toContainText('$3,070.77')
+})
+
+test('total trip budget follows the sum of category budgets', async ({ page }) => {
+  await page.goto('#/trip/trip-japan-2026/budget')
+  await page.getByRole('button', { name: 'Edit trip' }).click()
+  await page.getByRole('button', { name: 'Set budgets' }).click()
+
+  const total = page.getByLabel('Total trip budget')
+  await expect(total).toHaveValue('900000')
+  await expect(total).toHaveAttribute('readonly', '')
+  await page.getByLabel('Shopping').fill('60000')
+  await expect(total).toHaveValue('910000')
+
+  await page.getByRole('button', { name: 'Save budgets' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Trip saved' })).toBeVisible()
+  await expect(page.getByLabel('Trip budget summary')).toContainText('¥910,000')
 })
 
 test('keyboard focus and dialog escape remain predictable', async ({ page, browserName }) => {
@@ -70,9 +112,9 @@ test('keyboard focus and dialog escape remain predictable', async ({ page, brows
   await expect(page.locator('#main-content')).toBeFocused()
   await page.getByRole('button', { name: 'Edit trip' }).click()
   await page.getByRole('button', { name: 'Add item' }).click()
-  await expect(page.getByRole('dialog', { name: 'Add to the trip' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'What belongs in the plan?' })).toBeVisible()
   await page.keyboard.press('Escape')
-  await expect(page.getByRole('dialog', { name: 'Add to the trip' })).toBeHidden()
+  await expect(page.getByRole('dialog', { name: 'What belongs in the plan?' })).toBeHidden()
 })
 
 test('primary mobile controls meet the 44px target', async ({ page }) => {

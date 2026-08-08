@@ -47,7 +47,7 @@ export function PlanPage() {
           <section className="aside-quote"><p>“The best plan leaves enough room for the place itself.”</p></section>
         </aside>
       </div>
-      {activeDay ? <EditorDialog open={editorOpen} onOpenChange={setEditorOpen} tripId={trip.id} dayId={activeDay.id} initial={editing} onSave={mutations.saveItem.mutateAsync} /> : null}
+      {activeDay ? <EditorDialog open={editorOpen} onOpenChange={setEditorOpen} tripId={trip.id} dayId={activeDay.id} initial={editing} defaultCurrency={trip.displayCurrency} onSave={mutations.saveItem.mutateAsync} /> : null}
       <DayEditorDialog key={`${selectedDay ?? 'new'}-${dayEditorOpen}`} open={dayEditorOpen} onOpenChange={setDayEditorOpen} tripId={trip.id} day={selectedDay ? activeDay : undefined} onSave={mutations.saveDay.mutateAsync} onDelete={activeDay ? () => mutations.deleteRecord.mutate({ entity: 'day', id: activeDay.id }) : undefined} onDuplicate={activeDay ? () => { mutations.duplicateDay.mutate(activeDay); setDayEditorOpen(false) } : undefined} onMove={activeDay ? (delta) => mutations.moveDay.mutate({ day: activeDay, delta, siblings: days }) : undefined} />
       {deletedId ? <UndoToast message="Item deleted" onUndo={() => { mutations.restoreRecord.mutate({ entity: 'item', id: deletedId }); setDeletedId(undefined) }} onDismiss={() => setDeletedId(undefined)} /> : null}
     </>

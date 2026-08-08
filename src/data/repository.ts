@@ -1,8 +1,39 @@
 import { db } from './db'
 import type { ContentItem, MediaRecord, OutboxEntry, Trip, TripBundle, TripDay } from '../domain/types'
 import { requestSync } from './syncEvents'
+import { normalizeCurrency } from '../domain/currency'
+import { fixtureDays, fixtureItems, fixtureTrips } from './fixtures'
 
 const now = () => new Date().toISOString()
+
+function withBudgetDefaults(trip: Trip): Trip {
+  const displayCurrency = normalizeCurrency(trip.displayCurrency, normalizeCurrency(trip.baseCurrency))
+  return {
+    ...trip,
+    displayCurrency,
+    budgetAmount: trip.budgetAmount ?? 0,
+    budgetCurrency: normalizeCurrency(trip.budgetCurrency, displayCurrency),
+    categoryBudgets: trip.categoryBudgets ?? {}
+  }
+}
+
+async function ensureE2EFixtures() {
+  if (import.meta.env.VITE_E2E_OWNER_BYPASS !== 'true') return
+
+  await db.transaction('rw', db.trips, db.days, db.items, async () => {
+    const [trips, days, items] = await Promise.all([
+      db.trips.bulkGet(fixtureTrips.map(({ id }) => id)),
+      db.days.bulkGet(fixtureDays.map(({ id }) => id)),
+      db.items.bulkGet(fixtureItems.map(({ id }) => id))
+    ])
+    const missingTrips = fixtureTrips.filter((_, index) => !trips[index])
+    const missingDays = fixtureDays.filter((_, index) => !days[index])
+    const missingItems = fixtureItems.filter((_, index) => !items[index])
+    if (missingTrips.length) await db.trips.bulkPut(missingTrips)
+    if (missingDays.length) await db.days.bulkPut(missingDays)
+    if (missingItems.length) await db.items.bulkPut(missingItems)
+  })
+}
 
 async function enqueue(
   tripId: string,
@@ -29,16 +60,18 @@ export const localRepository = {
     })
   },
   async listTrips(): Promise<Trip[]> {
-    return (await db.trips.toArray()).filter((trip) => !trip.deletedAt).sort((a, b) => a.startDate.localeCompare(b.startDate))
+    await ensureE2EFixtures()
+    return (await db.trips.toArray()).filter((trip) => !trip.deletedAt).map(withBudgetDefaults).sort((a, b) => a.startDate.localeCompare(b.startDate))
   },
   async getTrip(tripId: string): Promise<TripBundle | undefined> {
+    await ensureE2EFixtures()
     const [trip, days, items, media] = await Promise.all([
       db.trips.get(tripId), db.days.where('tripId').equals(tripId).toArray(),
       db.items.where('tripId').equals(tripId).toArray(), db.media.where('tripId').equals(tripId).toArray()
     ])
     if (!trip || trip.deletedAt) return undefined
     return {
-      trip,
+      trip: withBudgetDefaults(trip),
       days: days.filter((day) => !day.deletedAt).sort((a, b) => a.position - b.position),
       items: items.filter((item) => !item.deletedAt).sort((a, b) => a.position - b.position),
       media: media.filter((entry) => !entry.deletedAt).sort((a, b) => a.position - b.position)
@@ -58,7 +91,10 @@ export const localRepository = {
       id: input.id ?? crypto.randomUUID(), ownerId: input.ownerId ?? existing?.ownerId ?? 'local-owner', title: input.title,
       subtitle: input.subtitle ?? existing?.subtitle ?? '', startDate: input.startDate, endDate: input.endDate,
       timezone: input.timezone ?? existing?.timezone ?? 'UTC', baseCurrency: input.baseCurrency ?? existing?.baseCurrency ?? 'USD',
-      displayCurrency: input.displayCurrency ?? existing?.displayCurrency ?? input.baseCurrency ?? 'USD',
+      displayCurrency: normalizeCurrency(input.displayCurrency ?? existing?.displayCurrency ?? input.baseCurrency),
+      budgetAmount: input.budgetAmount ?? existing?.budgetAmount ?? 0,
+      budgetCurrency: normalizeCurrency(input.budgetCurrency ?? existing?.budgetCurrency ?? input.displayCurrency ?? existing?.displayCurrency ?? input.baseCurrency),
+      categoryBudgets: input.categoryBudgets ?? existing?.categoryBudgets ?? {},
       coverUrl: input.coverUrl ?? existing?.coverUrl ?? 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82', coverAlt: input.coverAlt ?? existing?.coverAlt ?? 'Mountain landscape seen from a train window',
       status: input.status ?? existing?.status ?? 'upcoming', shareEnabled: input.shareEnabled ?? existing?.shareEnabled ?? false,
       shareToken: input.shareToken ?? existing?.shareToken, createdAt: existing?.createdAt ?? timestamp, updatedAt: timestamp,
@@ -116,7 +152,7 @@ export const localRepository = {
       endTime: input.endTime, location: input.location, mapsUrl: input.mapsUrl, provider: input.provider,
       confirmationCode: input.confirmationCode, status: input.status, position: input.position ?? existing?.position ?? await db.items.where('tripId').equals(input.tripId).count(),
       imageUrl: input.imageUrl, imageAlt: input.imageAlt, plannedAmount: input.plannedAmount, actualAmount: input.actualAmount,
-      currency: input.currency, occurredOn: input.occurredOn, paid: input.paid,
+      currency: input.currency, budgetCategory: input.budgetCategory, occurredOn: input.occurredOn, paid: input.paid,
       createdAt: existing?.createdAt ?? timestamp, updatedAt: timestamp, version: (existing?.version ?? 0) + 1, deletedAt: existing?.deletedAt
     }
     await db.items.put(item)

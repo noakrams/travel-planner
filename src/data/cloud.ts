@@ -1,6 +1,8 @@
 import type { ContentItem, ContentKind, MediaRecord, Trip, TripDay } from '../domain/types'
 import { localRepository } from './repository'
 import { getOwnerAccess, getSupabase, hasSupabaseConfig } from './supabase'
+import { normalizeCurrency } from '../domain/currency'
+import type { BudgetCategory } from '../domain/types'
 
 type Row = Record<string, unknown>
 
@@ -21,7 +23,9 @@ function remoteTrip(row: Row): Trip {
   return {
     ...base(row), ownerId: text(row.owner_id), title: text(row.title), subtitle: text(row.subtitle),
     startDate: text(row.start_date), endDate: text(row.end_date), timezone: text(row.timezone, 'UTC'),
-    baseCurrency: text(row.base_currency, 'USD'), displayCurrency: text(row.display_currency, 'USD'),
+    baseCurrency: text(row.base_currency, 'USD'), displayCurrency: normalizeCurrency(row.display_currency),
+    budgetAmount: number(row.budget_amount), budgetCurrency: normalizeCurrency(row.budget_currency ?? row.display_currency),
+    categoryBudgets: recordOfNumbers(row.category_budgets) as Partial<Record<BudgetCategory, number>>,
     coverUrl: 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82',
     coverAlt: 'A scenic destination landscape',
     status: text(row.status, 'upcoming') as Trip['status'], shareEnabled: Boolean(row.share_enabled)
@@ -40,8 +44,15 @@ export function commonItem(row: Row, kind: ContentKind): ContentItem {
     location: optionalText(row.location_name ?? row.location ?? row.destination), mapsUrl: optionalText(row.maps_url),
     provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.display_status ?? row.status),
     position: number(row.position), plannedAmount: optionalNumber(row.planned_amount), actualAmount: optionalNumber(row.actual_amount),
-    currency: optionalText(row.currency), occurredOn: optionalText(row.occurred_on), paid: row.paid == null ? undefined : Boolean(row.paid)
+    currency: row.currency ? normalizeCurrency(row.currency) : undefined,
+    budgetCategory: optionalText(row.budget_category ?? (kind === 'expense' ? row.category : undefined)) as ContentItem['budgetCategory'],
+    occurredOn: optionalText(row.occurred_on), paid: row.paid == null ? undefined : Boolean(row.paid)
   }
+}
+
+function recordOfNumbers(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  return Object.fromEntries(Object.entries(value).flatMap(([key, entry]) => Number.isFinite(Number(entry)) ? [[key, Number(entry)]] : []))
 }
 
 const tableKinds: Array<[string, ContentKind]> = [
