@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A researched Kyoto itinerary proposal for 24–28 September 2026.">
+  <title>Kyoto · 24–28 September 2026</title>
+  <style>
+    :root {
+      --ink: #182823;
+      --soft-ink: #52635d;
+      --paper: #f3f6f2;
+      --paper-deep: #e7ece5;
+      --white: #fcfdfb;
+      --indigo: #213557;
+      --river: #3c7b88;
+      --moss: #56705b;
+      --moss-pale: #dce7dc;
+      --vermilion: #c94737;
+      --vermilion-pale: #f2d9d3;
+      --gold: #aa842e;
+      --gold-pale: #eee4c7;
+      --line: #cbd5cc;
+      --shadow: 0 18px 50px rgba(24, 40, 35, .09);
+      --serif: "Iowan Old Style", "Palatino Linotype", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --utility: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, transparent 0 49.8%, rgba(24, 40, 35, .025) 49.8% 50.2%, transparent 50.2%),
+        var(--paper);
+      font-family: var(--sans);
+      line-height: 1.62;
+    }
+    a { color: var(--indigo); text-underline-offset: .2em; }
+    a:hover { color: var(--vermilion); }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .72rem clamp(1rem, 4vw, 3rem);
+      color: white;
+      background: rgba(24, 40, 35, .94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,.14);
+    }
+    .topbar nav { display: flex; gap: .35rem; overflow-x: auto; scrollbar-width: none; }
+    .topbar nav::-webkit-scrollbar { display: none; }
+    .topbar a {
+      flex: 0 0 auto;
+      padding: .34rem .62rem;
+      color: rgba(255,255,255,.78);
+      border-radius: 99px;
+      font-size: .76rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .topbar a:hover { color: white; background: rgba(255,255,255,.1); }
+    .print-button {
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 99px;
+      padding: .42rem .72rem;
+      color: white;
+      background: transparent;
+      font: 700 .75rem var(--sans);
+      cursor: pointer;
+    }
+
+    .hero {
+      min-height: 78vh;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+      gap: clamp(2rem, 7vw, 7rem);
+      align-items: center;
+      padding: clamp(5.5rem, 10vw, 9rem) max(1.2rem, calc((100vw - 1180px) / 2));
+      color: white;
+      background: var(--indigo);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .26;
+      background:
+        radial-gradient(circle at 75% 23%, rgba(255,255,255,.18) 0 1px, transparent 2px),
+        linear-gradient(125deg, transparent 0 58%, rgba(60,123,136,.55) 58% 61%, transparent 61% 64%, rgba(201,71,55,.62) 64% 67%, transparent 67%);
+      background-size: 23px 23px, auto;
+    }
+    .hero-copy, .route-seal { position: relative; z-index: 1; }
+    .eyebrow {
+      margin: 0 0 1rem;
+      color: #bbd5d7;
+      font: 700 .76rem/1.2 var(--utility);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.06; }
+    h1 { max-width: 760px; margin: 0; font-size: clamp(3.9rem, 10vw, 8.5rem); letter-spacing: -.06em; }
+    h1 span { display: block; color: #d8b65e; font-size: .28em; letter-spacing: .06em; text-transform: uppercase; }
+    .standfirst { max-width: 650px; margin: 2rem 0 0; color: rgba(255,255,255,.78); font-size: clamp(1rem, 2vw, 1.22rem); }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2rem; }
+    .hero-meta span { padding: .5rem .72rem; border: 1px solid rgba(255,255,255,.19); border-radius: 99px; color: rgba(255,255,255,.9); font-size: .78rem; }
+
+    .route-seal {
+      justify-self: end;
+      width: min(100%, 410px);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: clamp(1rem, 3vw, 2rem);
+      background: rgba(14, 31, 50, .4);
+      box-shadow: 18px 18px 0 rgba(8, 19, 31, .24);
+    }
+    .route-seal h2 { margin: 0 0 1.5rem; font-size: 1.35rem; color: #eef4ef; }
+    .seal-row { display: grid; grid-template-columns: 78px 1fr; gap: 1rem; align-items: start; padding: .9rem 0; border-top: 1px solid rgba(255,255,255,.14); }
+    .seal-row time { color: #d8b65e; font: 700 .76rem var(--utility); }
+    .seal-row strong { display: block; font-family: var(--serif); font-size: 1.05rem; }
+    .seal-row small { display: block; margin-top: .2rem; color: rgba(255,255,255,.6); }
+
+    main { max-width: 1180px; margin: 0 auto; padding: 0 1.2rem 6rem; }
+    section { scroll-margin-top: 5rem; padding: clamp(4rem, 8vw, 7rem) 0 0; }
+    .section-head { display: grid; grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: clamp(2rem, 7vw, 7rem); align-items: end; margin-bottom: 2rem; }
+    .kicker { margin: 0 0 .65rem; color: var(--vermilion); font: 700 .72rem var(--utility); letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin: 0; font-size: clamp(2.4rem, 6vw, 4.6rem); letter-spacing: -.045em; }
+    .section-intro { margin: 0; color: var(--soft-ink); font-size: 1.06rem; }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1.5rem;
+      align-items: center;
+      padding: 1.2rem 1.35rem;
+      border-left: 5px solid var(--vermilion);
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .decision strong { font-family: var(--serif); font-size: 1.12rem; }
+    .decision p { margin: .18rem 0 0; color: var(--soft-ink); }
+    .decision .status { padding: .45rem .65rem; border-radius: 99px; background: var(--vermilion-pale); color: #8d2c23; font: 700 .7rem var(--utility); text-transform: uppercase; white-space: nowrap; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: .75rem; margin-top: 1.8rem; }
+    .summary-day { min-height: 190px; position: relative; overflow: hidden; padding: 1rem; border-top: 5px solid var(--river); background: var(--white); }
+    .summary-day:nth-child(2) { border-color: var(--moss); }
+    .summary-day:nth-child(3) { border-color: var(--vermilion); }
+    .summary-day:nth-child(4) { border-color: var(--gold); }
+    .summary-day:nth-child(5) { border-color: var(--indigo); }
+    .summary-day time { display: block; color: var(--soft-ink); font: 700 .69rem var(--utility); text-transform: uppercase; }
+    .summary-day h3 { margin: .5rem 0 .55rem; font-size: 1.35rem; }
+    .summary-day p { margin: 0; color: var(--soft-ink); font-size: .86rem; line-height: 1.5; }
+    .summary-day .km { position: absolute; right: .75rem; bottom: .65rem; color: var(--line); font: 700 1.4rem var(--utility); }
+
+    .day-plan { position: relative; margin-top: 2rem; padding: clamp(1.2rem, 3vw, 2.2rem); border: 1px solid var(--line); background: rgba(252,253,251,.82); box-shadow: var(--shadow); }
+    .day-plan::before { content: ""; position: absolute; left: 123px; top: 145px; bottom: 96px; width: 2px; background: linear-gradient(var(--river), var(--moss), var(--vermilion)); }
+    .day-title { display: grid; grid-template-columns: 92px 1fr auto; gap: 1rem; align-items: start; padding-bottom: 1.4rem; border-bottom: 1px solid var(--line); }
+    .date-block { padding: .65rem; color: white; text-align: center; background: var(--indigo); }
+    .date-block b { display: block; font: 500 2rem/1 var(--serif); }
+    .date-block span { font: 700 .65rem var(--utility); letter-spacing: .1em; text-transform: uppercase; }
+    .day-title h3 { margin: .12rem 0 .35rem; font-size: clamp(1.75rem, 4vw, 2.8rem); letter-spacing: -.03em; }
+    .day-title p { margin: 0; color: var(--soft-ink); }
+    .walk { padding: .48rem .65rem; border: 1px solid var(--line); color: var(--soft-ink); font: 700 .68rem var(--utility); text-align: right; }
+    .timeline { margin-top: 1rem; }
+    .stop { display: grid; grid-template-columns: 92px 30px 1fr; gap: 1rem; padding: .8rem 0; }
+    .stop time { padding-top: .2rem; color: var(--indigo); font: 700 .78rem var(--utility); text-align: right; }
+    .dot { position: relative; z-index: 2; width: 14px; height: 14px; margin: .28rem auto 0; border: 3px solid var(--paper); border-radius: 50%; background: var(--river); box-shadow: 0 0 0 2px var(--river); }
+    .stop:nth-child(3n+2) .dot { background: var(--moss); box-shadow: 0 0 0 2px var(--moss); }
+    .stop:nth-child(3n+3) .dot { background: var(--vermilion); box-shadow: 0 0 0 2px var(--vermilion); }
+    .stop-body { padding: 0 0 .75rem; border-bottom: 1px dashed var(--line); }
+    .stop:last-child .stop-body { border-bottom: 0; }
+    .stop-body h4 { display: inline; margin: 0; font: 700 1rem var(--sans); }
+    .stop-body p { margin: .28rem 0 0; color: var(--soft-ink); }
+    .tag { display: inline-block; margin: 0 .3rem .2rem 0; padding: .22rem .42rem; border-radius: 3px; font: 700 .62rem var(--utility); letter-spacing: .05em; text-transform: uppercase; vertical-align: .1rem; }
+    .must { color: #fff; background: var(--vermilion); }
+    .recommended { color: #264833; background: var(--moss-pale); }
+    .optional { color: #6f5514; background: var(--gold-pale); }
+    .book { color: #fff; background: var(--indigo); }
+    .break { color: #1f5861; background: #d9ebed; }
+    .practical { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: 1.1rem; }
+    .practical > div { padding: .9rem 1rem; background: var(--paper-deep); }
+    .practical strong { display: block; margin-bottom: .2rem; color: var(--indigo); font: 700 .7rem var(--utility); letter-spacing: .08em; text-transform: uppercase; }
+    .practical p { margin: 0; color: var(--soft-ink); font-size: .88rem; }
+
+    .booking-grid, .verdict-grid, .food-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+    .booking-card { position: relative; padding: 1.25rem 1.3rem 1.25rem 4.5rem; border: 1px solid var(--line); background: var(--white); }
+    .booking-card .number { position: absolute; left: 1rem; top: 1rem; color: var(--vermilion); font: 500 2.3rem/1 var(--serif); }
+    .booking-card h3, .verdict h3, .food-card h3 { margin: 0 0 .35rem; font-size: 1.25rem; }
+    .booking-card p, .verdict p, .food-card p { margin: 0; color: var(--soft-ink); font-size: .9rem; }
+    .booking-card .action { display: inline-block; margin-top: .75rem; color: var(--vermilion); font: 700 .68rem var(--utility); letter-spacing: .07em; text-transform: uppercase; }
+
+    .verdict { padding: 1.2rem; border-top: 4px solid var(--moss); background: var(--white); }
+    .verdict:nth-child(2n) { border-color: var(--gold); }
+    .verdict .signal { display: block; margin-bottom: .6rem; color: var(--soft-ink); font: 700 .65rem var(--utility); letter-spacing: .08em; text-transform: uppercase; }
+
+    .food-card { padding: 1.2rem; background: var(--white); border: 1px solid var(--line); }
+    .food-card .price { display: inline-block; margin-top: .7rem; color: var(--indigo); font: 700 .7rem var(--utility); }
+    .food-note { margin-top: 1rem; padding: 1rem 1.2rem; border: 1px solid #e2c8c1; background: var(--vermilion-pale); }
+    .food-note p { margin: 0; }
+
+    .weather-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .weather-switch article { padding: 1.3rem; color: white; background: var(--moss); }
+    .weather-switch article:last-child { background: var(--river); }
+    .weather-switch h3 { margin: 0 0 .5rem; font-size: 1.35rem; }
+    .weather-switch p { margin: 0; color: rgba(255,255,255,.82); }
+
+    .sources { columns: 2 300px; column-gap: 2rem; padding: 1.2rem; background: var(--paper-deep); }
+    .sources li { break-inside: avoid; margin: 0 0 .65rem; padding-left: .25rem; color: var(--soft-ink); }
+    .source-note { margin-top: 1rem; color: var(--soft-ink); font-size: .88rem; }
+    footer { margin-top: 5rem; padding: 2.2rem 1.2rem; color: rgba(255,255,255,.7); text-align: center; background: var(--ink); }
+    footer strong { color: white; }
+
+    @media (max-width: 900px) {
+      .hero { min-height: auto; grid-template-columns: 1fr; }
+      .route-seal { justify-self: stretch; width: 100%; }
+      .section-head { grid-template-columns: 1fr; gap: 1rem; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-day:last-child { grid-column: 1 / -1; min-height: 130px; }
+      .day-title { grid-template-columns: 78px 1fr; }
+      .walk { grid-column: 2; justify-self: start; text-align: left; }
+      .day-plan::before { left: 104px; top: 195px; }
+      .stop { grid-template-columns: 72px 24px 1fr; gap: .65rem; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar nav a:nth-child(n+4) { display: none; }
+      .print-button { display: none; }
+      .hero { padding-top: 5rem; }
+      h1 { font-size: clamp(3.4rem, 20vw, 5.5rem); }
+      .summary-grid, .booking-grid, .verdict-grid, .food-grid, .practical, .weather-switch { grid-template-columns: 1fr; }
+      .summary-day:last-child { grid-column: auto; }
+      .day-plan { padding: 1rem .8rem; }
+      .day-plan::before { display: none; }
+      .day-title { grid-template-columns: 68px 1fr; }
+      .stop { grid-template-columns: 54px 1fr; gap: .7rem; }
+      .stop time { text-align: left; }
+      .dot { display: none; }
+      .stop-body { padding-bottom: .9rem; }
+      .booking-card { padding-left: 3.8rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print {
+      body { background: white; font-size: 10.5pt; }
+      .topbar { display: none; }
+      .hero { min-height: auto; padding: 2rem; color: var(--ink); background: white; border-bottom: 3px solid var(--ink); }
+      .hero::before, .route-seal { display: none; }
+      .standfirst, .eyebrow { color: var(--soft-ink); }
+      .hero-meta span { color: var(--ink); border-color: var(--line); }
+      main { max-width: none; padding: 0; }
+      section { padding-top: 2rem; }
+      .day-plan, .booking-card, .verdict, .food-card { break-inside: avoid; box-shadow: none; }
+      a { color: var(--ink); text-decoration: none; }
+      footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav aria-label="Page sections">
+      <a href="#shape">The shape</a>
+      <a href="#days">Day by day</a>
+      <a href="#book">Book</a>
+      <a href="#food">Food</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+    <button class="print-button" type="button" onclick="window.print()">Print / save PDF</button>
+  </header>
+
+  <div class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Itinerary proposal · checked 8 August 2026</p>
+      <h1>Kyoto <span>24–28 September 2026</span></h1>
+      <p class="standfirst">Four nights built around green Kyoto, the essential icons, unhurried food breaks, one exceptional dinner—and a Nara visit that earns its time.</p>
+      <div class="hero-meta">
+        <span>Hotel Resol Kawaramachi Sanjo</span>
+        <span>2 main areas per day</span>
+        <span>Later mornings</span>
+        <span>Flexible 8–14 km days</span>
+      </div>
+    </div>
+    <aside class="route-seal" aria-label="Trip outline">
+      <h2>The route, without zigzags</h2>
+      <div class="seal-row"><time>THU 24</time><div><strong>Arrival → digital Kyoto</strong><small>Nishiki · teamLab · Kawaramachi</small></div></div>
+      <div class="seal-row"><time>FRI 25</time><div><strong>West into the hills</strong><small>Arashiyama · gardens · Golden Pavilion</small></div></div>
+      <div class="seal-row"><time>SAT 26</time><div><strong>Old Kyoto on foot</strong><small>Kiyomizu · tea · Gion · special dinner</small></div></div>
+      <div class="seal-row"><time>SUN 27</time><div><strong>Torii to the ancient capital</strong><small>Fushimi Inari · Nara Park · Tōdai-ji</small></div></div>
+    </aside>
+  </div>
+
+  <main>
+    <section id="shape">
+      <div class="section-head">
+        <div><p class="kicker">The planning brief</p><h2>Iconic, green, and paced like a holiday.</h2></div>
+        <p class="section-intro">This keeps the places that make a first Kyoto visit feel complete, but refuses the common “six temples before lunch” mistake. Each full day has two real anchors, a proper break, and a third element that can be dropped without damaging the day.</p>
+      </div>
+      <div class="decision">
+        <div><strong>This is a review draft—not the database itinerary.</strong><p>Nothing here has been written to Supabase and no reservation has been made. Approve or revise this proposal first.</p></div>
+        <span class="status">Awaiting approval</span>
+      </div>
+      <div class="summary-grid" aria-label="Five-day overview">
+        <article class="summary-day"><time>Thu · 24 Sep</time><h3>Arrive &amp; immerse</h3><p>Tokyo train, a grazing lunch at Nishiki, then a protected three-hour Biovortex slot.</p><span class="km">6–8 km</span></article>
+        <article class="summary-day"><time>Fri · 25 Sep</time><h3>Arashiyama</h3><p>Bamboo as the doorway—not the whole attraction—followed by two gardens and the river.</p><span class="km">10–13 km</span></article>
+        <article class="summary-day"><time>Sat · 26 Sep</time><h3>Higashiyama</h3><p>Kiyomizu, old lanes, a real tea ceremony, Gion, rest, and the special dinner.</p><span class="km">9–12 km</span></article>
+        <article class="summary-day"><time>Sun · 27 Sep</time><h3>Fushimi + Nara</h3><p>The signature torii, then deer and the Great Buddha—the part that makes Nara worthwhile.</p><span class="km">11–14 km</span></article>
+        <article class="summary-day"><time>Mon · 28 Sep</time><h3>On to Osaka</h3><p>Breakfast, checkout, and an uncomplicated morning transfer. No sightseeing squeezed around luggage.</p><span class="km">travel</span></article>
+      </div>
+    </section>
+
+    <section id="days">
+      <div class="section-head">
+        <div><p class="kicker">Day by day</p><h2>The plan</h2></div>
+        <p class="section-intro">Times are deliberately realistic rather than minute-perfect. “Must” protects the day’s identity, “recommended” is worth the effort, and “optional” is the first thing to release when heat, queues, or tired feet intervene.</p>
+      </div>
+
+      <article class="day-plan">
+        <header class="day-title">
+          <div class="date-block"><b>24</b><span>Thursday</span></div>
+          <div><h3>Tokyo → Nishiki → teamLab</h3><p>A travel day that still feels like Kyoto, without asking you to wake before dawn.</p></div>
+          <div class="walk">6–8 km<br>mostly level</div>
+        </header>
+        <div class="timeline">
+          <div class="stop"><time>09:30</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Depart Tokyo on a direct Nozomi</h4><p>Target a train around 09:30–10:00. Typical ride time is a little over two hours; reserve seats rather than improvising immediately after Silver Week.</p></div></div>
+          <div class="stop"><time>12:15</time><span class="dot"></span><div class="stop-body"><h4>Taxi to Hotel Resol and leave luggage</h4><p>The hotel is in the middle of the evening action, not by Kyoto Station. Budget roughly 20 minutes door to door before check-in time.</p></div></div>
+          <div class="stop"><time>12:45</time><span class="dot"></span><div class="stop-body"><span class="tag break">Food break</span><h4>Nishiki Market grazing lunch</h4><p>Walk through “Kyoto’s kitchen” while stalls are open: grilled bites, rice crackers, fruit, sweets, and something substantial before teamLab. Ask about <em>dashi</em>; “vegetable” does not automatically mean fish-free.</p></div></div>
+          <div class="stop"><time>14:15</time><span class="dot"></span><div class="stop-body"><p>Taxi or train to the Kyoto Station area. Arrive early enough to use the lockers and enter calmly.</p></div></div>
+          <div class="stop"><time>14:30–18:00</time><span class="dot"></span><div class="stop-body"><span class="tag must">Must</span><span class="tag book">Timed ticket</span><h4>teamLab Biovortex Kyoto</h4><p>Protect 3–3½ hours. The museum is much larger than the 90-minute teamLab assumption and recent reports repeatedly call it Kyoto’s strongest indoor experience. Wear sneakers; some Athletic Forest works reject sandals or unstable footwear. Official tickets begin at ¥3,800 and can be changed up to three times under the official conditions.</p></div></div>
+          <div class="stop"><time>18:30</time><span class="dot"></span><div class="stop-body"><span class="tag break">Rest</span><h4>Check in and reset</h4><p>Shower, unpack, and take 45–60 minutes off your feet.</p></div></div>
+          <div class="stop"><time>20:00</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Easy first dinner near the hotel</h4><p><strong>Katsukura Sanjo</strong> is the dependable first-night choice: a calm Kyoto-born tonkatsu restaurant a few minutes away, open to 21:00 and requiring no reservation. Take a short lantern-lit look at Kiyamachi or Pontocho afterward only if energy remains.</p></div></div>
+        </div>
+        <div class="practical"><div><strong>Why this order</strong><p>teamLab is seven minutes from Kyoto Station, but luggage over 50 cm cannot enter. Dropping bags and eating first turns the museum into the day’s single major commitment.</p></div><div><strong>Drop if delayed</strong><p>Skip Nishiki and eat near the museum. Do not compress Biovortex below 2½ hours just to preserve the market.</p></div></div>
+      </article>
+
+      <article class="day-plan">
+        <header class="day-title">
+          <div class="date-block"><b>25</b><span>Friday</span></div>
+          <div><h3>Arashiyama beyond the bamboo photo</h3><p>Nature, a Zen garden, mountain views, and the river—then the Golden Pavilion if the legs agree.</p></div>
+          <div class="walk">10–13 km<br>steps &amp; slopes</div>
+        </header>
+        <div class="timeline">
+          <div class="stop"><time>08:45</time><span class="dot"></span><div class="stop-body"><h4>Leave after hotel breakfast</h4><p>Walk to Kyoto-Kawaramachi Station and take the Hankyu line via Katsura. Expected door-to-door time: about 40–50 minutes.</p></div></div>
+          <div class="stop"><time>09:40</time><span class="dot"></span><div class="stop-body"><span class="tag must">Must</span><h4>Bamboo Grove → Ōkōchi Sansō</h4><p>The grove itself is brief and will already be busy. Walk through it without making it carry the whole day, then enter the former actor’s hillside garden. The ¥1,000 admission includes tea and a sweet; this is the quiet, scenic payoff many crowd-disappointed visitors miss.</p></div></div>
+          <div class="stop"><time>11:15</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Tenryū-ji garden</h4><p>Enter from the north side and move toward the main gate. Its pond-and-mountain composition makes this garden distinct from the later temple stops. Official hours are 08:30–17:00; garden admission is ¥500.</p></div></div>
+          <div class="stop"><time>12:30</time><span class="dot"></span><div class="stop-body"><span class="tag break">Long lunch</span><h4>Lunch and a proper sit-down</h4><p>Choose by queue on the day. The useful rule here is more important than a viral restaurant: avoid losing 60–90 minutes to one famous soba shop. Confirm dipping sauce or broth is not fish-based for Noa.</p></div></div>
+          <div class="stop"><time>14:00</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Togetsukyō Bridge and Hozu River edge</h4><p>A relaxed riverside walk supplies the “scenic Kyoto” that the bamboo lane alone cannot. Sit with a coffee or cold drink before deciding on the north-Kyoto add-on.</p></div></div>
+          <div class="stop"><time>15:00</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Taxi to Kinkaku-ji</h4><p>Allow roughly 20–30 minutes depending on traffic. The Golden Pavilion is a short, crowded one-way circuit, but you explicitly want the icons and it is visually unique. Official hours are 09:00–17:00; admission ¥500.</p></div></div>
+          <div class="stop"><time>16:30</time><span class="dot"></span><div class="stop-body"><span class="tag optional">First drop</span><h4>Return to the hotel</h4><p>If Arashiyama ran long or the heat is heavy, skip Kinkaku-ji and go straight back. This is the plan’s cleanest sacrifice because it costs substantial transit for a short visit.</p></div></div>
+          <div class="stop"><time>19:00</time><span class="dot"></span><div class="stop-body"><h4>Casual downtown dinner</h4><p>Keep it unbooked. Kyoto Engine Ramen is the safe mixed-menu option when Noa wants a clearly fish-free vegan bowl and Eshed wants a regular ramen; otherwise browse Teramachi around the hotel.</p></div></div>
+        </div>
+        <div class="practical"><div><strong>Why this order</strong><p>Friday is the least-bad crowd day for Arashiyama. The route passes through the famous lane into quieter terrain, then exits through Tenryū-ji without a separate cross-town temple run.</p></div><div><strong>Walking reality</strong><p>Ōkōchi Sansō has slopes and stone steps. Take it slowly; if knees object, replace it with a longer river café break and keep Tenryū-ji.</p></div></div>
+      </article>
+
+      <article class="day-plan">
+        <header class="day-title">
+          <div class="date-block"><b>26</b><span>Saturday</span></div>
+          <div><h3>Higashiyama, tea, and the splurge</h3><p>The classic old-Kyoto day, paced from temple terrace to teahouse to a Taishō-era garden dinner.</p></div>
+          <div class="walk">9–12 km<br>hills early</div>
+        </header>
+        <div class="timeline">
+          <div class="stop"><time>08:30</time><span class="dot"></span><div class="stop-body"><h4>Taxi to Kiyomizu-dera</h4><p>This is the one morning worth beginning promptly, but not at 06:00. A taxi avoids the uphill bus-stop walk and delivers you to the top of the district.</p></div></div>
+          <div class="stop"><time>09:00</time><span class="dot"></span><div class="stop-body"><span class="tag must">Must</span><h4>Kiyomizu-dera</h4><p>See the wooden stage, green Higashiyama backdrop, and Otowa waterfall. It will be busy; the plan accepts that rather than pretending a later start can beat the crowds. Allow 75–90 minutes.</p></div></div>
+          <div class="stop"><time>10:30</time><span class="dot"></span><div class="stop-body"><span class="tag must">Must</span><h4>Sannenzaka and Ninenzaka downhill</h4><p>Descending is kinder than climbing. Pause for the Yasaka Pagoda view, ceramics, and small food shops, but keep moving toward the booked experience.</p></div></div>
+          <div class="stop"><time>12:00</time><span class="dot"></span><div class="stop-body"><span class="tag book">Reserve</span><span class="tag recommended">Recommended</span><h4>Camellia Flower shared tea ceremony</h4><p>A 45-minute English experience in a machiya directly on Ninenzaka: watch the host, have a seasonal sweet, and whisk your own matcha. The shared ceremony is the right value; no kimono add-on is needed. <a href="https://tea-kyoto.com/reservation/flower/" target="_blank" rel="noopener">Book the Flower shared ceremony on Camellia’s official site ↗</a></p></div></div>
+          <div class="stop"><time>13:00</time><span class="dot"></span><div class="stop-body"><span class="tag break">Lunch</span><h4>Unhurried lunch in Higashiyama</h4><p>Take at least an hour. The tea sweet is not lunch, and the special dinner is still five hours away.</p></div></div>
+          <div class="stop"><time>14:00</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Ishibe-kōji → Yasaka Shrine → Gion</h4><p>A geographically continuous old-Kyoto walk rather than another headline temple. Continue through Maruyama Park and Hanamikoji, treating private lanes and working geiko/maiko respectfully.</p></div></div>
+          <div class="stop"><time>15:30</time><span class="dot"></span><div class="stop-body"><span class="tag optional">If there’s time</span><h4>Kennin-ji</h4><p>Add one quiet Zen interior and garden only if you still want another temple. Otherwise go directly to the hotel for a longer rest.</p></div></div>
+          <div class="stop"><time>16:15</time><span class="dot"></span><div class="stop-body"><span class="tag break">Rest</span><h4>Hotel reset</h4><p>Allow at least 75 minutes before dinner. Taxi back to Higashiyama around 17:35.</p></div></div>
+          <div class="stop"><time>18:00</time><span class="dot"></span><div class="stop-body"><span class="tag must">Special dinner</span><span class="tag book">Reserve</span><h4>LE UN Akagane Resort Kyoto Higashiyama 1925</h4><p>Kyoto-inspired French cuisine inside a restored Taishō-era villa and garden. The current ¥16,000 tasting course sits inside your splurge range. The restaurant explicitly offers vegetarian/vegan and allergen-aware menus with at least three days’ notice: request a fish-, seafood-, and fish-dashi-free menu for Noa, while Eshed keeps the standard seasonal menu.</p></div></div>
+          <div class="stop"><time>21:00</time><span class="dot"></span><div class="stop-body"><span class="tag optional">Optional bar</span><h4>Bar K6</h4><p>If this is the bar night, stop for one well-made drink near the hotel. K6 is the quieter classic choice, open 18:00–02:00 and closed Monday–Tuesday. Otherwise walk the short stretch of Pontocho and call it a night.</p></div></div>
+        </div>
+        <div class="practical"><div><strong>Why this order</strong><p>All daytime sights form one downhill line. The only deliberate repeat journey is the hotel rest before dinner—and the taxi is worth it.</p></div><div><strong>Rain handling</strong><p>Keep the tea ceremony and dinner. Shorten the lanes, use taxis at both ends, and move Kennin-ji from optional to recommended for its covered interiors.</p></div></div>
+      </article>
+
+      <article class="day-plan">
+        <header class="day-title">
+          <div class="date-block"><b>27</b><span>Sunday</span></div>
+          <div><h3>Fushimi Inari + the Nara worth doing</h3><p>Nara is not a deer-only full day: the Great Buddha gives it weight, and the rail corridor makes Fushimi a rational pairing.</p></div>
+          <div class="walk">11–14 km<br>some stairs</div>
+        </header>
+        <div class="timeline">
+          <div class="stop"><time>08:45</time><span class="dot"></span><div class="stop-body"><h4>Keihan train south</h4><p>Walk or take a short taxi to Gion-Shijo, then ride directly to Fushimi-Inari Station. This is easier from your hotel than backtracking to Kyoto Station.</p></div></div>
+          <div class="stop"><time>09:20</time><span class="dot"></span><div class="stop-body"><span class="tag must">Must</span><h4>Fushimi Inari Taisha</h4><p>See the main shrine and Senbon Torii. At this hour the lower route will be crowded, but people thin as the path climbs. Do not make the summit mandatory: the lower loop gives you the iconic experience in about 75 minutes.</p></div></div>
+          <div class="stop"><time>10:40</time><span class="dot"></span><div class="stop-body"><span class="tag optional">Energy option</span><h4>Continue to Yotsutsuji</h4><p>Add roughly 45–60 minutes and meaningful stairs for the halfway view. Only do this if both of you feel fresh; Nara still involves a long park walk.</p></div></div>
+          <div class="stop"><time>11:10</time><span class="dot"></span><div class="stop-body"><h4>JR Inari → Nara</h4><p>Cross to JR Inari Station and continue on the Nara line. Allow about an hour depending on the local/rapid connection.</p></div></div>
+          <div class="stop"><time>12:15</time><span class="dot"></span><div class="stop-body"><span class="tag break">Lunch</span><h4>Lunch before the deer</h4><p>Eat near Kintetsu Nara or the west edge of the park before buying deer crackers. A café with pasta, curry, or a meat dish gives Noa a clearer fish-free lunch than Nara’s famous persimmon-leaf sushi or noodle broth.</p></div></div>
+          <div class="stop"><time>13:15</time><span class="dot"></span><div class="stop-body"><span class="tag recommended">Recommended</span><h4>Nara Park and deer</h4><p>Enjoy the novelty, but keep it to roughly 45 minutes. The deer are wild: feed only official crackers, show empty hands when finished, and do not tease them with food.</p></div></div>
+          <div class="stop"><time>14:00</time><span class="dot"></span><div class="stop-body"><span class="tag must">Must</span><h4>Tōdai-ji Great Buddha Hall</h4><p>This is why the Nara trip survives the “overrated” concern. The scale is categorically different from Kyoto’s intimate temples. Official September hours are 07:30–17:30; admission is ¥800.</p></div></div>
+          <div class="stop"><time>15:15</time><span class="dot"></span><div class="stop-body"><span class="tag optional">If there’s time</span><h4>Nigatsu-dō viewpoint</h4><p>A quieter terrace east of the Great Buddha Hall. It adds stairs but gives a final landscape view. Skip it if you climbed to Yotsutsuji in the morning.</p></div></div>
+          <div class="stop"><time>16:15</time><span class="dot"></span><div class="stop-body"><h4>Return to Kyoto</h4><p>Use a park bus if feet are tired, then Kintetsu to Kyoto or JR depending on the best live connection. Expect to reach the hotel around 17:30–18:00.</p></div></div>
+          <div class="stop"><time>19:30</time><span class="dot"></span><div class="stop-body"><h4>Flexible final Kyoto dinner</h4><p>No reservation. Choose by appetite near Kawaramachi: ramen, gyoza, yakitori, or a department-store food hall picnic. Pack afterward for the Osaka move.</p></div></div>
+        </div>
+        <div class="practical"><div><strong>Why not add Uji?</strong><p>Fushimi + Nara already reaches your upper walking range. Uji would turn the day into a rail checklist and duplicate tea after the dedicated ceremony.</p></div><div><strong>Known closure</strong><p>Isuien would normally fit you perfectly, but its official site closes the garden for maintenance in the last third of September. It is intentionally absent.</p></div></div>
+      </article>
+
+      <article class="day-plan">
+        <header class="day-title">
+          <div class="date-block"><b>28</b><span>Monday</span></div>
+          <div><h3>Kyoto → Osaka</h3><p>Leave while the trip still feels unhurried.</p></div>
+          <div class="walk">transfer day</div>
+        </header>
+        <div class="timeline">
+          <div class="stop"><time>08:00</time><span class="dot"></span><div class="stop-body"><span class="tag break">Easy morning</span><h4>Breakfast and checkout</h4><p>Breakfast is included. Check out by 09:30–10:00, comfortably ahead of the hotel’s 11:00 deadline.</p></div></div>
+          <div class="stop"><time>10:00</time><span class="dot"></span><div class="stop-body"><h4>Train to Osaka</h4><p>The exact route depends on the Osaka hotel: Hankyu is convenient for Umeda; Keihan plus metro can suit some central areas; JR is simplest if the hotel is near Osaka Station. Finalize after the Osaka booking is confirmed.</p></div></div>
+        </div>
+        <div class="practical"><div><strong>Why nothing else</strong><p>You asked for a fairly early—but not painfully early—Osaka move. This avoids sightseeing with luggage and gives Osaka a genuine arrival day.</p></div><div><strong>Luggage</strong><p>No forwarding is needed for this short leg unless the Osaka hotel cannot hold bags. Carrying cases on an off-peak late-morning train is reasonable.</p></div></div>
+      </article>
+    </section>
+
+    <section id="book">
+      <div class="section-head">
+        <div><p class="kicker">After plan approval</p><h2>Four things to reserve</h2></div>
+        <p class="section-intro">These are recommendations, not completed bookings. Prices and inventory were checked on 8 August 2026 and should be reconfirmed at purchase.</p>
+      </div>
+      <div class="booking-grid">
+        <article class="booking-card"><span class="number">1</span><h3>teamLab · Thu 24 · 14:30 or 15:00</h3><p>Official timed entry from ¥3,800. Allow 3–3½ hours. Buy directly so the date/time can be modified under the official rules; tickets are not generally cancellable.</p><span class="action">Priority: book first</span></article>
+        <article class="booking-card"><span class="number">2</span><h3>Camellia Flower · Sat 26 · 12:00</h3><p>Book the 45-minute shared ceremony in Ninenzaka. September pricing is currently ¥4,000 per person; skip the ¥6,000-per-person kimono add-on unless you later decide the dressing experience matters. <a href="https://tea-kyoto.com/reservation/flower/" target="_blank" rel="noopener">Open the official booking page ↗</a></p><span class="action">Priority: reserve now</span></article>
+        <article class="booking-card"><span class="number">3</span><h3>Akagane · Sat 26 · 18:00</h3><p>Target the ¥16,000 Kyoto-French course. In the booking notes, request one menu with no fish, shellfish, seafood, or fish-based dashi; the second guest takes the standard menu. Their official policy asks for at least three days’ notice.</p><span class="action">Priority: get dietary confirmation in writing</span></article>
+        <article class="booking-card"><span class="number">4</span><h3>Tokyo → Kyoto · Thu 24 · about 09:30</h3><p>Standard reserved-seat inventory opens at 10:00 JST one month before travel—24 August. Choose adjacent seats; if either suitcase exceeds 160 cm total dimensions, select the free oversized-baggage-area seats.</p><span class="action">Priority: book 24 August</span></article>
+      </div>
+    </section>
+
+    <section id="food">
+      <div class="section-head">
+        <div><p class="kicker">Food without making Noa compromise</p><h2>A small, useful bench</h2></div>
+        <p class="section-intro">The plan avoids over-reserving ordinary meals. These options cover different moods near places you will already be, and all give Noa a clear path away from fish while leaving Eshed unrestricted.</p>
+      </div>
+      <div class="food-grid">
+        <article class="food-card"><h3>Katsukura Sanjo</h3><p>Kyoto-born tonkatsu in a calm hidden dining room, very close to the hotel. No reservations; official hours 11:00–21:00. Best first-night fallback.</p><span class="price">Casual · roughly ¥1,500–3,000 pp</span></article>
+        <article class="food-card"><h3>Kyoto Engine Ramen</h3><p>Regular ramen alongside clearly labeled vegan miso and edamame-based bowls. Popular with international visitors because mixed-diet couples can both eat properly.</p><span class="price">Casual · around ¥1,800–2,200 pp</span></article>
+        <article class="food-card"><h3>Nishiki Market</h3><p>Use it as a shared tasting lunch, not a rigid restaurant stop. Eshed can try seafood; Noa can build a meal from grilled meat, rice snacks, fruit, sweets, and vendors able to confirm ingredients.</p><span class="price">Grazing · set your own budget</span></article>
+        <article class="food-card"><h3>Bar K6</h3><p>A grown-up cocktail bar near the hotel rather than a late club. Official hours 18:00–02:00, closed Monday and Tuesday. Slot it only if you want the optional bar night.</p><span class="price">Drinks · check menu pricing on the night</span></article>
+      </div>
+      <div class="food-note"><p><strong>The recurring trap is dashi.</strong> Bonito stock appears in noodle broth, dipping sauce, miso soup, rolled omelet, and apparently vegetable dishes. The useful request is “no fish, seafood, or fish-based dashi,” not simply “no visible fish.”</p></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><p class="kicker">Weather flexibility</p><h2>One switch, not five backup plans</h2></div>
+        <p class="section-intro">Late September remains hot, humid, and inside typhoon season. The plan is structured, but it only needs one clean weather swap.</p>
+      </div>
+      <div class="weather-switch">
+        <article><h3>If Friday is the clearest day</h3><p>Keep the plan as written. Arashiyama benefits most from dry paths and open mountain views.</p></article>
+        <article><h3>If Friday is the wettest day</h3><p>Swap Friday and Sunday: do Fushimi’s lower route plus Tōdai-ji in rain, and save Arashiyama’s garden, slopes, and river for Sunday. Keep Saturday fixed because tea and dinner are booked.</p></article>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <div class="section-head">
+        <div><p class="kicker">What the research changed</p><h2>Verdicts, not popularity scores</h2></div>
+        <p class="section-intro">Operational facts come from official sources. Community reports are used for pacing, disappointment patterns, and practical friction—not treated as proof.</p>
+      </div>
+      <div class="verdict-grid">
+        <article class="verdict"><span class="signal">Strong cross-source convergence</span><h3>Arashiyama is worthwhile; the bamboo lane alone is not.</h3><p>Traveler reports repeatedly describe the grove as brief and crowded. Tenryū-ji, Ōkōchi Sansō, and the river make the west-Kyoto trip earn half a day.</p></article>
+        <article class="verdict"><span class="signal">Mixed opinion · retained for your preference</span><h3>Kinkaku-ji is a beautiful image and a thin experience.</h3><p>It remains because you want icons. It is also the first drop because the visit is short and its location costs time.</p></article>
+        <article class="verdict"><span class="signal">Recent reports · mostly positive</span><h3>Biovortex deserves three hours.</h3><p>Adult couples and first-time teamLab visitors commonly call it a highlight or their favorite teamLab. Dissent centers on crowds, phones, dizziness, and the large time cost.</p></article>
+        <article class="verdict"><span class="signal">Official structure + broad community pattern</span><h3>Nara is a half day, but not merely a deer stop.</h3><p>The deer novelty can wear off; Tōdai-ji’s Great Buddha is the high-value anchor. Fushimi sits on the same southern rail corridor, making the combination efficient.</p></article>
+        <article class="verdict"><span class="signal">Facebook check · useful price distinction</span><h3>Camellia Flower shared is the sensible version—not Garden private.</h3><p>In the Hebrew groups, travelers pushed back on the high price of Camellia Garden’s private ceremony, while two commenters specifically identified the Flower/Gion group ceremony as the much cheaper option; one reported paying about ₪100 per person. That matches Camellia’s current ¥4,000 September price and supports the version used here.</p></article>
+        <article class="verdict"><span class="signal">Mr Japan · useful selectively</span><h3>Use taxis strategically and expect September heat.</h3><p>Mr Japan’s destination material is thin, but its practical guidance explicitly treats short Kyoto taxi rides as legitimate and lists September around 29/21°C with meaningful rain/typhoon risk. This aligns with official/logistical evidence.</p></article>
+      </div>
+
+      <h3 style="margin:3rem 0 1rem;font-size:1.7rem">Sources checked</h3>
+      <ul class="sources">
+        <li><a href="https://www.teamlab.art/e/kyoto/">teamLab Biovortex official visitor and ticket information</a></li>
+        <li><a href="https://www.kiyomizudera.or.jp/en/visit/">Kiyomizu-dera official visitor information</a></li>
+        <li><a href="https://inari.jp/en/">Fushimi Inari Taisha official site</a></li>
+        <li><a href="https://www.tenryuji.com/en/visit/index.html">Tenryū-ji official admission and access</a></li>
+        <li><a href="https://www.shokoku-ji.jp/en/kinkakuji/access/">Kinkaku-ji official hours and admission</a></li>
+        <li><a href="https://tea-kyoto.com/reservation/flower/">Camellia Flower official shared-ceremony booking page</a></li>
+        <li><a href="https://www.facebook.com/groups/japanguideil/posts/601462102981841/">Facebook: Hebrew discussion comparing Camellia Garden private with Flower shared</a></li>
+        <li><a href="https://www.arkh.jp/restaurant/en/">LE UN Akagane official dining and dietary policy</a></li>
+        <li><a href="https://www.todaiji.or.jp/en/information/haikan/">Tōdai-ji official hours and admission</a></li>
+        <li><a href="https://narashikanko.or.jp/en/feature/narapark">Nara City Tourism Association park guide</a></li>
+        <li><a href="https://isuien.or.jp/en/access">Isuien official maintenance closure notice</a></li>
+        <li><a href="https://global.jr-central.co.jp/en/nozomi/">JR Central reservation timing</a></li>
+        <li><a href="https://www.japan-guide.com/e/e3952.html">Japan Guide: Biovortex structure and access</a></li>
+        <li><a href="https://www.reddit.com/r/JapanTravelTips/comments/1taarfb/teamlab_biovortex_worth_it/">Reddit: recent Biovortex fit and duration discussion</a></li>
+        <li><a href="https://www.reddit.com/r/JapanTravelTips/comments/1k18vr5/when_in_kyoto_crowds/">Reddit: Kyoto crowd tradeoffs</a></li>
+        <li><a href="https://www.mrjapan.co.il/post/%D7%9E%D7%95%D7%A0%D7%99%D7%95%D7%AA">Mr Japan: taxis in Kyoto</a></li>
+        <li><a href="https://www.mrjapan.co.il/post/%D7%9E%D7%96%D7%92-%D7%90%D7%95%D7%95%D7%99%D7%A8-%D7%95%D7%A4%D7%A8%D7%99%D7%97%D7%94">Mr Japan: September weather and typhoon context</a></li>
+      </ul>
+      <p class="source-note"><strong>Facebook access:</strong> both named Hebrew groups were searched in the signed-in session on 8 August 2026. Their recent result sets were reviewed, but no Facebook post is treated as an operational authority. Opening hours, prices, closures, and ticket rules above are linked to official sources.</p>
+    </section>
+  </main>
+
+  <footer><strong>Kyoto proposal · version 1</strong><br>Prepared 8 August 2026 · Awaiting Noa and Eshed’s approval before database entry.</footer>
+</body>
+</html>
