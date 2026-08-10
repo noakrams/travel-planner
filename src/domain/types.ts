@@ -46,7 +46,17 @@ export interface TripDay extends BaseRecord {
   date: string
   title: string
   summary: string
+  baseLocation?: string
   position: number
+}
+
+export type ItemAttachmentKind = 'email' | 'link' | 'file'
+
+export interface ItemAttachment {
+  id: string
+  kind: ItemAttachmentKind
+  label: string
+  url: string
 }
 
 export interface ContentItem extends BaseRecord {
@@ -60,6 +70,7 @@ export interface ContentItem extends BaseRecord {
   location?: string
   mapsUrl?: string
   emailUrl?: string
+  attachments?: ItemAttachment[]
   provider?: string
   confirmationCode?: string
   status?: string

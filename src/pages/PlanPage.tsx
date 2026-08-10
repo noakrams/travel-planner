@@ -1,4 +1,5 @@
 import { CalendarPlus } from '@phosphor-icons/react/CalendarPlus'
+import { MapPin } from '@phosphor-icons/react/MapPin'
 import { Plus } from '@phosphor-icons/react/Plus'
 import { format } from 'date-fns'
 import { useState } from 'react'
@@ -13,6 +14,16 @@ import { DayEditorDialog } from '../components/DayEditorDialog'
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { SortableItineraryStop } from '../components/SortableItineraryStop'
+import { groupDaysByBase } from '../domain/dayGroups'
+
+const dateAtNoon = (date: string) => new Date(`${date}T12:00:00`)
+
+function groupDateRange(dates: string[]) {
+  const first = dateAtNoon(dates[0])
+  const last = dateAtNoon(dates.at(-1) ?? dates[0])
+  if (dates.length === 1) return format(first, 'MMM d')
+  return first.getMonth() === last.getMonth() ? `${format(first, 'MMM d')}–${format(last, 'd')}` : `${format(first, 'MMM d')}–${format(last, 'MMM d')}`
+}
 
 export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
   const { tripId } = useParams()
@@ -28,17 +39,25 @@ export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
     const dayItems = items.filter((item) => item.dayId === activeDay?.id)
     const routes = items.filter((item) => item.kind === 'route')
     const bookings = items.filter((item) => ['booking', 'stay', 'transport'].includes(item.kind))
+    const dayGroups = groupDaysByBase(days)
     return <>
-      <div className="day-strip" aria-label="Trip days">{days.map((day) => {
-        const active = day.id === activeDay?.id
-        return <button className={active ? 'active' : ''} key={day.id} aria-label={`${format(new Date(`${day.date}T12:00:00`), 'EEE d — EEEE, MMMM d')}${editMode && active ? ' — tap again to edit' : ''}`} onClick={() => {
-          if (editMode && active) { setSelectedDay(day.id); setDayEditorOpen(true) }
-          else setSelectedDay(day.id)
-        }}><span>{format(new Date(`${day.date}T12:00:00`), 'EEE')}</span><strong>{format(new Date(`${day.date}T12:00:00`), 'd')}</strong></button>
-      })}{editMode ? <button className="add-day" onClick={() => { setSelectedDay(undefined); setDayEditorOpen(true) }}><CalendarPlus /><span>Add</span></button> : null}</div>
+      <nav className="day-strip" aria-label="Trip days grouped by overnight base">{dayGroups.map((group) => {
+        const groupActive = group.days.some((day) => day.id === activeDay?.id)
+        const range = groupDateRange(group.days.map((day) => day.date))
+        return <section className={`day-strip-group${groupActive ? ' active-group' : ''}`} key={`${group.label}-${group.days[0].id}`} aria-label={`${group.label}, ${range}`}>
+          <div className="day-strip-group-label"><MapPin aria-hidden="true" /><span>{group.label}</span><small>{range}</small></div>
+          <div className="day-strip-group-days">{group.days.map((day) => {
+            const active = day.id === activeDay?.id
+            return <button className={active ? 'active' : ''} key={day.id} aria-label={`${group.label} — ${format(dateAtNoon(day.date), 'EEE d — EEEE, MMMM d')}${editMode && active ? ' — tap again to edit' : ''}`} onClick={() => {
+              if (editMode && active) { setSelectedDay(day.id); setDayEditorOpen(true) }
+              else setSelectedDay(day.id)
+            }}><span>{format(dateAtNoon(day.date), 'EEE')}</span><strong>{format(dateAtNoon(day.date), 'd')}</strong></button>
+          })}</div>
+        </section>
+      })}{editMode ? <button className="add-day" aria-label="Add itinerary day" onClick={() => { setSelectedDay(undefined); setDayEditorOpen(true) }}><CalendarPlus /><span>Add</span></button> : null}</nav>
       <div className="trip-layout-grid">
         <section className="itinerary-section" aria-labelledby="day-heading">
-          <div className="day-heading"><div><p className="eyebrow">Day {(activeDay?.position ?? 0) + 1} · {activeDay ? format(new Date(`${activeDay.date}T12:00:00`), 'EEEE, MMMM d') : ''}</p><BidiText as="h2" id="day-heading" value={activeDay?.title ?? ''}>{activeDay?.title ?? 'Plan your first day'}</BidiText><BidiText as="p" value={activeDay?.summary ?? ''}>{activeDay?.summary}</BidiText>{editMode && activeDay ? <button className="text-action" onClick={() => { setSelectedDay(activeDay.id); setDayEditorOpen(true) }}>Edit day details</button> : null}</div>{editMode && activeDay ? <button className="pill dark" onClick={() => { setEditing(undefined); setEditorOpen(true) }}><Plus />Add item</button> : null}</div>
+          <div className="day-heading"><div><p className="eyebrow">Day {(activeDay?.position ?? 0) + 1} · {activeDay ? format(dateAtNoon(activeDay.date), 'EEEE, MMMM d') : ''}</p>{activeDay?.baseLocation ? <p className="day-base-label"><MapPin aria-hidden="true" />Overnight in {activeDay.baseLocation}</p> : null}<BidiText as="h2" id="day-heading" value={activeDay?.title ?? ''}>{activeDay?.title ?? 'Plan your first day'}</BidiText><BidiText as="p" value={activeDay?.summary ?? ''}>{activeDay?.summary}</BidiText>{editMode && activeDay ? <button className="text-action" onClick={() => { setSelectedDay(activeDay.id); setDayEditorOpen(true) }}>Edit day details</button> : null}</div>{editMode && activeDay ? <button className="pill dark" onClick={() => { setEditing(undefined); setEditorOpen(true) }}><Plus />Add item</button> : null}</div>
           {dayItems.length ? <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event: DragEndEvent) => { if (event.over && event.active.id !== event.over.id) mutations.reorderItems.mutate({ activeId: String(event.active.id), overId: String(event.over.id), siblings: dayItems }) }}><SortableContext items={dayItems.map((item) => item.id)} strategy={verticalListSortingStrategy}><div className="journey-ribbon">{dayItems.map((item) => <SortableItineraryStop key={item.id} item={item} editMode={editMode} onEdit={() => { setEditing(item); setEditorOpen(true) }} onDuplicate={() => mutations.duplicateItem.mutate(item)} onMove={(delta) => mutations.moveItem.mutate({ item, delta, siblings: dayItems })} onDelete={() => { mutations.deleteRecord.mutate({ entity: 'item', id: item.id }); setDeletedId(item.id) }} />)}</div></SortableContext></DndContext> : <div className="empty-state"><Plus size={28} /><h3>This day is wide open.</h3><p>Add a place, a train, or simply a note to yourself.</p>{editMode ? <button className="button primary" onClick={() => setEditorOpen(true)}>Add the first item</button> : null}</div>}
         </section>
         <aside className="trip-aside">

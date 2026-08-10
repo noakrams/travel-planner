@@ -123,7 +123,8 @@ export const localRepository = {
     const timestamp = now()
     const day: TripDay = {
       id: input.id ?? crypto.randomUUID(), tripId: input.tripId, date: input.date, title: input.title,
-      summary: input.summary ?? existing?.summary ?? '', position: input.position ?? existing?.position ?? await db.days.where('tripId').equals(input.tripId).count(),
+      summary: input.summary ?? existing?.summary ?? '', baseLocation: 'baseLocation' in input ? input.baseLocation : existing?.baseLocation,
+      position: input.position ?? existing?.position ?? await db.days.where('tripId').equals(input.tripId).count(),
       createdAt: existing?.createdAt ?? timestamp, updatedAt: timestamp, version: (existing?.version ?? 0) + 1, deletedAt: existing?.deletedAt
     }
     await db.days.put(day)
@@ -149,7 +150,8 @@ export const localRepository = {
     const item: ContentItem = {
       id: input.id ?? crypto.randomUUID(), tripId: input.tripId, dayId: input.dayId,
       kind: input.kind, title: input.title, description: input.description ?? '', startTime: input.startTime,
-      endTime: input.endTime, location: input.location, mapsUrl: input.mapsUrl, emailUrl: input.emailUrl, provider: input.provider,
+      endTime: input.endTime, location: input.location, mapsUrl: input.mapsUrl, emailUrl: input.emailUrl,
+      attachments: input.attachments ?? existing?.attachments ?? [], provider: input.provider,
       confirmationCode: input.confirmationCode, status: input.status, position: input.position ?? existing?.position ?? await db.items.where('tripId').equals(input.tripId).count(),
       imageUrl: input.imageUrl, imageAlt: input.imageAlt, plannedAmount: input.plannedAmount, actualAmount: input.actualAmount,
       currency: input.currency, budgetCategory: input.budgetCategory, occurredOn: input.occurredOn, paid: input.paid,

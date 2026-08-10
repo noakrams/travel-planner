@@ -1,6 +1,7 @@
 import { CaretDown } from '@phosphor-icons/react/CaretDown'
 import { CaretUp } from '@phosphor-icons/react/CaretUp'
 import { Copy } from '@phosphor-icons/react/Copy'
+import { MapPin } from '@phosphor-icons/react/MapPin'
 import { Trash } from '@phosphor-icons/react/Trash'
 import { useState, type FormEvent } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -18,6 +19,7 @@ export function DayEditorDialog({ open, onOpenChange, day, tripId, onSave, onDel
   const [title, setTitle] = useState(day?.title ?? '')
   const [date, setDate] = useState(day?.date ?? '')
   const [summary, setSummary] = useState(day?.summary ?? '')
+  const [baseLocation, setBaseLocation] = useState(day?.baseLocation ?? '')
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -25,7 +27,7 @@ export function DayEditorDialog({ open, onOpenChange, day, tripId, onSave, onDel
     event.preventDefault()
     setSaving(true)
     try {
-      await onSave({ ...day, tripId, title, date, summary })
+      await onSave({ ...day, tripId, title, date, summary, baseLocation: baseLocation.trim() || undefined })
       onOpenChange(false)
     } catch {
       // The shared mutation toast explains the failure and the editor stays open.
@@ -40,6 +42,7 @@ export function DayEditorDialog({ open, onOpenChange, day, tripId, onSave, onDel
         <DialogHeader><p className="eyebrow">Itinerary day</p><DialogTitle>{day ? 'Edit day' : 'Add a day'}</DialogTitle><DialogDescription>Day titles and notes can be English, Hebrew, or mixed.</DialogDescription></DialogHeader>
         <form onSubmit={submit}>
           <div className="form-field"><Label htmlFor="day-date">Date</Label><Input id="day-date" type="date" required value={date} onChange={(event) => setDate(event.target.value)} /></div>
+          <div className="form-field"><Label htmlFor="day-base"><MapPin />Overnight base</Label><Input id="day-base" dir="auto" placeholder="Tokyo" value={baseLocation} onChange={(event) => setBaseLocation(event.target.value)} /><small>Consecutive days with the same base are grouped together.</small></div>
           <div className="form-field"><Label htmlFor="day-title">Day title</Label><Input id="day-title" dir="auto" required value={title} onChange={(event) => setTitle(event.target.value)} /></div>
           <div className="form-field"><Label htmlFor="day-summary">Summary</Label><Textarea id="day-summary" dir="auto" rows={4} value={summary} onChange={(event) => setSummary(event.target.value)} /></div>
           {day ? <div className="day-order-actions"><Button type="button" variant="outline" onClick={() => onMove?.(-1)}><CaretUp />Move up</Button><Button type="button" variant="outline" onClick={() => onMove?.(1)}><CaretDown />Move down</Button><Button type="button" variant="outline" onClick={onDuplicate}><Copy />Duplicate day</Button></div> : null}

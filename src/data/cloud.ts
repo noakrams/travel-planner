@@ -1,4 +1,4 @@
-import type { ContentItem, ContentKind, MediaRecord, Trip, TripDay } from '../domain/types'
+import type { ContentItem, ContentKind, ItemAttachment, MediaRecord, Trip, TripDay } from '../domain/types'
 import { localRepository } from './repository'
 import { getOwnerAccess, getSupabase, hasSupabaseConfig } from './supabase'
 import { normalizeCurrency } from '../domain/currency'
@@ -11,6 +11,25 @@ const optionalText = (value: unknown) => typeof value === 'string' && value ? va
 const number = (value: unknown, fallback = 0) => typeof value === 'number' ? value : value == null ? fallback : Number(value)
 const optionalNumber = (value: unknown) => value == null ? undefined : number(value)
 const timestamp = (value: unknown) => text(value, new Date().toISOString())
+
+function attachments(value: unknown, legacyEmailUrl?: string): ItemAttachment[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((entry) => {
+      if (!entry || typeof entry !== 'object') return []
+      const row = entry as Record<string, unknown>
+      const kind = text(row.kind)
+      const url = text(row.url)
+      if (!['email', 'link', 'file'].includes(kind) || !url) return []
+      return [{
+        id: text(row.id, crypto.randomUUID()),
+        kind: kind as ItemAttachment['kind'],
+        label: text(row.label, kind === 'email' ? 'Confirmation email' : kind === 'file' ? 'File' : 'Link'),
+        url
+      }]
+    })
+  }
+  return legacyEmailUrl ? [{ id: 'legacy-email', kind: 'email', label: 'Confirmation email', url: legacyEmailUrl }] : []
+}
 
 function base(row: Row) {
   return {
@@ -32,17 +51,19 @@ function remoteTrip(row: Row): Trip {
   }
 }
 
-function remoteDay(row: Row): TripDay {
-  return { ...base(row), tripId: text(row.trip_id), date: text(row.date), title: text(row.title), summary: text(row.summary), position: number(row.position) }
+export function remoteDay(row: Row): TripDay {
+  return { ...base(row), tripId: text(row.trip_id), date: text(row.date), title: text(row.title), summary: text(row.summary), baseLocation: optionalText(row.base_location), position: number(row.position) }
 }
 
 export function commonItem(row: Row, kind: ContentKind): ContentItem {
+  const emailUrl = optionalText(row.email_url)
   return {
     ...base(row), tripId: text(row.trip_id), dayId: optionalText(row.day_id), kind,
     title: text(row.title ?? row.name ?? row.city), description: text(row.description ?? row.notes ?? row.body),
     startTime: optionalText(row.start_time), endTime: optionalText(row.end_time),
     location: optionalText(row.location_name ?? row.location ?? row.destination), mapsUrl: optionalText(row.maps_url),
-    emailUrl: optionalText(row.email_url),
+    emailUrl,
+    attachments: attachments(row.attachments, emailUrl),
     provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.display_status ?? row.status),
     position: number(row.position), plannedAmount: optionalNumber(row.planned_amount), actualAmount: optionalNumber(row.actual_amount),
     currency: row.currency ? normalizeCurrency(row.currency) : undefined,

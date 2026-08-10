@@ -26,6 +26,20 @@ describe('syncErrorMessage', () => {
 })
 
 describe('remotePayload day assignments', () => {
+  it('synchronizes the overnight base for a trip day', () => {
+    const entry: OutboxEntry = {
+      id: 'sync-day', tripId: 'trip-japan-2026', entity: 'day', entityId: 'day-japan-7', operation: 'update',
+      payload: {
+        id: 'day-japan-7', tripId: 'trip-japan-2026', date: '2026-09-24', title: 'Tokyo to Kyoto',
+        summary: '', baseLocation: 'Kyoto', position: 6, createdAt: '2026-08-07T00:00:00.000Z',
+        updatedAt: '2026-08-07T00:00:00.000Z', version: 2
+      },
+      baseVersion: 1, retryCount: 0, state: 'pending', createdAt: '2026-08-07T00:00:00.000Z',
+      updatedAt: '2026-08-07T00:00:00.000Z', version: 1
+    }
+    expect(remotePayload(entry)).toMatchObject({ base_location: 'Kyoto' })
+  })
+
   it.each(['booking', 'stay', 'transport', 'place', 'food'] satisfies ContentKind[])(
     'keeps the day and time when synchronizing a %s',
     (kind) => {
@@ -35,12 +49,16 @@ describe('remotePayload day assignments', () => {
           id: `item-${kind}`, tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind, title: 'Tokyo stop',
           description: 'Published itinerary stop', startTime: '16:45', status: 'booked',
           emailUrl: 'https://mail.google.com/mail/u/0/#inbox/example', position: 3,
+          attachments: [{ id: 'confirmation', kind: 'email', label: 'Confirmation email', url: 'https://mail.google.com/mail/u/0/#inbox/example' }],
           createdAt: '2026-08-07T00:00:00.000Z', updatedAt: '2026-08-07T00:00:00.000Z', version: 2
         },
         baseVersion: 1, retryCount: 0, state: 'pending', createdAt: '2026-08-07T00:00:00.000Z',
         updatedAt: '2026-08-07T00:00:00.000Z', version: 1
       }
-      expect(remotePayload(entry)).toMatchObject({ day_id: 'day-japan-2', start_time: '16:45', email_url: 'https://mail.google.com/mail/u/0/#inbox/example' })
+      expect(remotePayload(entry)).toMatchObject({
+        day_id: 'day-japan-2', start_time: '16:45', email_url: 'https://mail.google.com/mail/u/0/#inbox/example',
+        attachments: [{ id: 'confirmation', kind: 'email', label: 'Confirmation email', url: 'https://mail.google.com/mail/u/0/#inbox/example' }]
+      })
     }
   )
 })

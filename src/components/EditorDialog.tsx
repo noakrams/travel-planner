@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { EnvelopeSimple, ImageSquare, MapPin, Receipt, UploadSimple } from '@phosphor-icons/react'
+import { EnvelopeSimple, ImageSquare, LinkSimple, MapPin, Paperclip, Plus, Receipt, Trash, UploadSimple } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -23,7 +23,12 @@ const schema = z.object({
   startTime: z.string(),
   location: z.string(),
   mapsUrl: z.union([z.literal(''), z.url('Enter a complete URL, including https://.')]),
-  emailUrl: z.union([z.literal(''), z.url('Enter a complete email URL, including https://.')]),
+  attachments: z.array(z.object({
+    id: z.string(),
+    kind: z.enum(['email', 'link', 'file']),
+    label: z.string().trim().min(1, 'Add a label.'),
+    url: z.url('Enter a complete URL, including https://.')
+  })),
   imageUrl: z.union([z.literal(''), z.url('Enter a complete image URL, including https://.')]),
   imageAlt: z.string(),
   cost: z.string().refine((value) => !value || Number(value) >= 0, 'Cost cannot be negative.'),
@@ -56,7 +61,7 @@ function emptyValues(kind: ContentKind, currency: CurrencyCode): FormValues {
     startTime: '',
     location: '',
     mapsUrl: '',
-    emailUrl: '',
+    attachments: [],
     imageUrl: '',
     imageAlt: '',
     cost: '',
@@ -89,6 +94,11 @@ export function EditorDialog({
     defaultValues: emptyValues(defaultKind, defaultCurrency),
     mode: 'onBlur'
   })
+  const { fields: attachmentFields, append: appendAttachment, remove: removeAttachment } = useFieldArray({
+    control,
+    name: 'attachments',
+    keyName: '_fieldId'
+  })
 
   useEffect(() => {
     reset(initial ? {
@@ -98,7 +108,9 @@ export function EditorDialog({
       startTime: initial.startTime ?? '',
       location: initial.location ?? '',
       mapsUrl: initial.mapsUrl ?? '',
-      emailUrl: initial.emailUrl ?? '',
+      attachments: initial.attachments?.length ? initial.attachments : initial.emailUrl ? [{
+        id: 'legacy-email', kind: 'email', label: 'Confirmation email', url: initial.emailUrl
+      }] : [],
       imageUrl: initial.imageUrl ?? '',
       imageAlt: initial.imageAlt ?? '',
       cost: initial.plannedAmount?.toString() ?? '',
@@ -130,7 +142,8 @@ export function EditorDialog({
         startTime: values.startTime || undefined,
         location: values.location || undefined,
         mapsUrl: values.mapsUrl || undefined,
-        emailUrl: values.emailUrl || undefined,
+        emailUrl: values.attachments.find((attachment) => attachment.kind === 'email')?.url,
+        attachments: values.attachments,
         imageUrl,
         imageAlt: values.imageAlt || undefined,
         plannedAmount: values.cost ? Number(values.cost) : undefined,
@@ -182,11 +195,37 @@ export function EditorDialog({
           <Input id="maps-url" type="url" inputMode="url" {...register('mapsUrl')} aria-invalid={Boolean(errors.mapsUrl)} />
           {errors.mapsUrl ? <p className="field-error" role="alert">{errors.mapsUrl.message}</p> : null}
         </div>
-        <div className="form-field form-field-wide">
-          <Label htmlFor="email-url"><EnvelopeSimple aria-hidden="true" />Linked email URL</Label>
-          <Input id="email-url" type="url" inputMode="url" placeholder="https://mail.google.com/mail/..." {...register('emailUrl')} aria-invalid={Boolean(errors.emailUrl)} />
-          {errors.emailUrl ? <p className="field-error" role="alert">{errors.emailUrl.message}</p> : <p className="helper-text">Paste the browser link to the confirmation email. It stays private when the trip is shared.</p>}
-        </div>
+        <details className="form-section form-field-wide attachment-fields">
+          <summary><Paperclip aria-hidden="true" />Confirmations &amp; tickets{attachmentFields.length ? <span className="attachment-count">{attachmentFields.length}</span> : null}</summary>
+          <div className="attachment-fields-inner">
+            <p className="helper-text">Add reservation emails, booking confirmations, flight tickets, vouchers, or file links here. Google Maps belongs in the location field above. These documents stay private when the trip is shared.</p>
+            {attachmentFields.map((field, index) => <div className="attachment-editor-row" key={field._fieldId}>
+              <div className="form-field attachment-kind">
+                <Label htmlFor={`attachment-kind-${index}`}>Type</Label>
+                <Controller name={`attachments.${index}.kind`} control={control} render={({ field: kindField }) => <Select value={kindField.value} onValueChange={kindField.onChange}>
+                  <SelectTrigger id={`attachment-kind-${index}`} className="form-select"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email"><EnvelopeSimple aria-hidden="true" />Confirmation email</SelectItem>
+                    <SelectItem value="link"><LinkSimple aria-hidden="true" />Booking or ticket link</SelectItem>
+                    <SelectItem value="file"><Paperclip aria-hidden="true" />Voucher or file link</SelectItem>
+                  </SelectContent>
+                </Select>} />
+              </div>
+              <div className="form-field attachment-label">
+                <Label htmlFor={`attachment-label-${index}`}>Label</Label>
+                <Input id={`attachment-label-${index}`} dir="auto" {...register(`attachments.${index}.label`)} aria-invalid={Boolean(errors.attachments?.[index]?.label)} />
+                {errors.attachments?.[index]?.label ? <p className="field-error" role="alert">{errors.attachments[index]?.label?.message}</p> : null}
+              </div>
+              <div className="form-field attachment-url">
+                <Label htmlFor={`attachment-url-${index}`}>URL</Label>
+                <Input id={`attachment-url-${index}`} type="url" inputMode="url" placeholder="https://…" {...register(`attachments.${index}.url`)} aria-invalid={Boolean(errors.attachments?.[index]?.url)} />
+                {errors.attachments?.[index]?.url ? <p className="field-error" role="alert">{errors.attachments[index]?.url?.message}</p> : null}
+              </div>
+              <Button className="attachment-remove" type="button" variant="ghost" size="icon" onClick={() => removeAttachment(index)} aria-label={`Remove attachment ${index + 1}`}><Trash aria-hidden="true" /></Button>
+            </div>)}
+            <Button className="attachment-add" type="button" variant="outline" onClick={() => appendAttachment({ id: crypto.randomUUID(), kind: 'link', label: 'Reservation confirmation', url: '' })}><Plus aria-hidden="true" />Add confirmation or ticket</Button>
+          </div>
+        </details>
 
         <section className="form-section form-field-wide" aria-labelledby="cost-heading">
           <div className="form-section-heading"><Receipt aria-hidden="true" /><div><h3 id="cost-heading">Cost</h3><p>Enter the price in the currency you were quoted.</p></div></div>

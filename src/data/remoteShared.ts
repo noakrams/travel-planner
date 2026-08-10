@@ -27,7 +27,7 @@ export async function getRemoteSharedTrip(rawToken: string): Promise<TripBundle 
   if (!tripId) return undefined
   const timestamp = new Date().toISOString()
   const base = (row: Record<string, unknown>) => ({ id: text(row.id), tripId, createdAt: timestamp, updatedAt: timestamp, version: 1, position: number(row.position) })
-  const days: TripDay[] = rows(payload.days).map((row) => ({ ...base(row), date: text(row.date), title: text(row.title), summary: text(row.summary) }))
+  const days: TripDay[] = rows(payload.days).map((row) => ({ ...base(row), date: text(row.date), title: text(row.title), summary: text(row.summary), baseLocation: text(row.base_location) || undefined }))
   const items: ContentItem[] = []
   for (const row of rows(payload.itinerary_items)) items.push({ ...base(row), ...costFields(row), dayId: text(row.day_id) || undefined, kind: 'activity', title: text(row.title), description: text(row.description), startTime: text(row.start_time) || undefined, endTime: text(row.end_time) || undefined, location: text(row.location_name) || undefined, mapsUrl: text(row.maps_url) || undefined, status: text(row.status) || undefined })
   for (const row of rows(payload.bookings)) items.push({ ...base(row), ...costFields(row), dayId: text(row.day_id) || undefined, kind: 'booking', title: text(row.title), description: text(row.notes), startTime: text(row.start_time) || undefined, location: text(row.location_name) || undefined, mapsUrl: text(row.maps_url) || undefined, provider: text(row.provider) || undefined, status: text(row.display_status ?? row.status) || undefined })
