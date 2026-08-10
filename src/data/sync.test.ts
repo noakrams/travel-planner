@@ -33,13 +33,14 @@ describe('remotePayload day assignments', () => {
         id: `sync-${kind}`, tripId: 'trip-japan-2026', entity: 'item', entityId: `item-${kind}`, operation: 'update',
         payload: {
           id: `item-${kind}`, tripId: 'trip-japan-2026', dayId: 'day-japan-2', kind, title: 'Tokyo stop',
-          description: 'Published itinerary stop', startTime: '16:45', status: 'booked', position: 3,
+          description: 'Published itinerary stop', startTime: '16:45', status: 'booked',
+          emailUrl: 'https://mail.google.com/mail/u/0/#inbox/example', position: 3,
           createdAt: '2026-08-07T00:00:00.000Z', updatedAt: '2026-08-07T00:00:00.000Z', version: 2
         },
         baseVersion: 1, retryCount: 0, state: 'pending', createdAt: '2026-08-07T00:00:00.000Z',
         updatedAt: '2026-08-07T00:00:00.000Z', version: 1
       }
-      expect(remotePayload(entry)).toMatchObject({ day_id: 'day-japan-2', start_time: '16:45' })
+      expect(remotePayload(entry)).toMatchObject({ day_id: 'day-japan-2', start_time: '16:45', email_url: 'https://mail.google.com/mail/u/0/#inbox/example' })
     }
   )
 })

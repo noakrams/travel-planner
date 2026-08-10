@@ -59,6 +59,7 @@ export interface ContentItem extends BaseRecord {
   endTime?: string
   location?: string
   mapsUrl?: string
+  emailUrl?: string
   provider?: string
   confirmationCode?: string
   status?: string

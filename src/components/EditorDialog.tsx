@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ImageSquare, MapPin, Receipt, UploadSimple } from '@phosphor-icons/react'
+import { EnvelopeSimple, ImageSquare, MapPin, Receipt, UploadSimple } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -23,6 +23,7 @@ const schema = z.object({
   startTime: z.string(),
   location: z.string(),
   mapsUrl: z.union([z.literal(''), z.url('Enter a complete URL, including https://.')]),
+  emailUrl: z.union([z.literal(''), z.url('Enter a complete email URL, including https://.')]),
   imageUrl: z.union([z.literal(''), z.url('Enter a complete image URL, including https://.')]),
   imageAlt: z.string(),
   cost: z.string().refine((value) => !value || Number(value) >= 0, 'Cost cannot be negative.'),
@@ -55,6 +56,7 @@ function emptyValues(kind: ContentKind, currency: CurrencyCode): FormValues {
     startTime: '',
     location: '',
     mapsUrl: '',
+    emailUrl: '',
     imageUrl: '',
     imageAlt: '',
     cost: '',
@@ -96,6 +98,7 @@ export function EditorDialog({
       startTime: initial.startTime ?? '',
       location: initial.location ?? '',
       mapsUrl: initial.mapsUrl ?? '',
+      emailUrl: initial.emailUrl ?? '',
       imageUrl: initial.imageUrl ?? '',
       imageAlt: initial.imageAlt ?? '',
       cost: initial.plannedAmount?.toString() ?? '',
@@ -127,6 +130,7 @@ export function EditorDialog({
         startTime: values.startTime || undefined,
         location: values.location || undefined,
         mapsUrl: values.mapsUrl || undefined,
+        emailUrl: values.emailUrl || undefined,
         imageUrl,
         imageAlt: values.imageAlt || undefined,
         plannedAmount: values.cost ? Number(values.cost) : undefined,
@@ -177,6 +181,11 @@ export function EditorDialog({
           <Label htmlFor="maps-url">Google Maps URL</Label>
           <Input id="maps-url" type="url" inputMode="url" {...register('mapsUrl')} aria-invalid={Boolean(errors.mapsUrl)} />
           {errors.mapsUrl ? <p className="field-error" role="alert">{errors.mapsUrl.message}</p> : null}
+        </div>
+        <div className="form-field form-field-wide">
+          <Label htmlFor="email-url"><EnvelopeSimple aria-hidden="true" />Linked email URL</Label>
+          <Input id="email-url" type="url" inputMode="url" placeholder="https://mail.google.com/mail/..." {...register('emailUrl')} aria-invalid={Boolean(errors.emailUrl)} />
+          {errors.emailUrl ? <p className="field-error" role="alert">{errors.emailUrl.message}</p> : <p className="helper-text">Paste the browser link to the confirmation email. It stays private when the trip is shared.</p>}
         </div>
 
         <section className="form-section form-field-wide" aria-labelledby="cost-heading">

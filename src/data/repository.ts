@@ -149,7 +149,7 @@ export const localRepository = {
     const item: ContentItem = {
       id: input.id ?? crypto.randomUUID(), tripId: input.tripId, dayId: input.dayId,
       kind: input.kind, title: input.title, description: input.description ?? '', startTime: input.startTime,
-      endTime: input.endTime, location: input.location, mapsUrl: input.mapsUrl, provider: input.provider,
+      endTime: input.endTime, location: input.location, mapsUrl: input.mapsUrl, emailUrl: input.emailUrl, provider: input.provider,
       confirmationCode: input.confirmationCode, status: input.status, position: input.position ?? existing?.position ?? await db.items.where('tripId').equals(input.tripId).count(),
       imageUrl: input.imageUrl, imageAlt: input.imageAlt, plannedAmount: input.plannedAmount, actualAmount: input.actualAmount,
       currency: input.currency, budgetCategory: input.budgetCategory, occurredOn: input.occurredOn, paid: input.paid,

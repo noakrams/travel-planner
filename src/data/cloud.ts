@@ -42,6 +42,7 @@ export function commonItem(row: Row, kind: ContentKind): ContentItem {
     title: text(row.title ?? row.name ?? row.city), description: text(row.description ?? row.notes ?? row.body),
     startTime: optionalText(row.start_time), endTime: optionalText(row.end_time),
     location: optionalText(row.location_name ?? row.location ?? row.destination), mapsUrl: optionalText(row.maps_url),
+    emailUrl: optionalText(row.email_url),
     provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.display_status ?? row.status),
     position: number(row.position), plannedAmount: optionalNumber(row.planned_amount), actualAmount: optionalNumber(row.actual_amount),
     currency: row.currency ? normalizeCurrency(row.currency) : undefined,

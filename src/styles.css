@@ -170,8 +170,11 @@ h3 { line-height: 1.04; }
 .card-body h3 { margin-bottom: 9px; padding-right: 36px; font-size: clamp(1.55rem, 3vw, 2.3rem); }
 .card-body > p { max-width: 66ch; margin-bottom: 0; color: var(--atlas-muted); line-height: 1.62; }
 .card-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--line-strong); }
+.card-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; min-width: 0; }
 .card-location { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--atlas); font-size: .78rem; font-weight: 680; }
 .card-location a { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; }
+.card-email-link { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 7px 10px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--atlas); font-size: .76rem; font-weight: 760; text-decoration: none; }
+.card-email-link:hover { background: var(--paper-deep); }
 .card-cost { display: grid; flex: 0 0 auto; gap: 2px; color: var(--atlas); font-size: .88rem; font-variant-numeric: tabular-nums; font-weight: 820; text-align: right; }
 .card-cost small { color: var(--atlas-muted); font-size: .55rem; letter-spacing: .08em; text-transform: uppercase; }
 .card-menu { position: absolute; z-index: 4; top: 12px; right: 12px; border: 1px solid var(--line) !important; background: rgb(255 255 255 / 94%) !important; color: var(--ink) !important; box-shadow: 0 5px 18px rgb(23 33 29 / 12%); }

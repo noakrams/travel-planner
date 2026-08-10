@@ -1,4 +1,5 @@
 import { ArrowSquareOut } from '@phosphor-icons/react/ArrowSquareOut'
+import { EnvelopeSimple } from '@phosphor-icons/react/EnvelopeSimple'
 import { MapPin } from '@phosphor-icons/react/MapPin'
 import { BidiText } from './BidiText'
 import { ItemActions } from './ItemActions'
@@ -16,7 +17,7 @@ export function ItineraryCard({ item, editMode, onEdit, onDuplicate, onMove, onD
       <div className="card-kicker"><span>{item.startTime ?? item.kind}</span>{item.status ? <span className="status-dot">{item.status}</span> : null}</div>
       <BidiText as="h3" value={item.title}>{item.title}</BidiText>
       <BidiText as="p" value={item.description}>{item.description}</BidiText>
-      <div className="card-footer">{item.location ? <div className="card-location"><MapPin size={17} aria-hidden="true" /><BidiText value={item.location}>{item.location}</BidiText>{item.mapsUrl ? <a href={item.mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${item.location} in Google Maps`}><ArrowSquareOut size={17} /></a> : null}</div> : <span />}{item.plannedAmount !== undefined && item.currency ? <span className="card-cost"><small>{budgetCategoryLabels[inferBudgetCategory(item)]}</small>{formatCurrency(item.plannedAmount, item.currency)}</span> : null}</div>
+      <div className="card-footer"><div className="card-links">{item.location ? <div className="card-location"><MapPin size={17} aria-hidden="true" /><BidiText value={item.location}>{item.location}</BidiText>{item.mapsUrl ? <a href={item.mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${item.location} in Google Maps`}><ArrowSquareOut size={17} /></a> : null}</div> : null}{item.emailUrl ? <a className="card-email-link" href={item.emailUrl} target="_blank" rel="noreferrer" aria-label={`Open linked email for ${item.title}`}><EnvelopeSimple size={17} aria-hidden="true" />View email<ArrowSquareOut size={15} aria-hidden="true" /></a> : null}</div>{item.plannedAmount !== undefined && item.currency ? <span className="card-cost"><small>{budgetCategoryLabels[inferBudgetCategory(item)]}</small>{formatCurrency(item.plannedAmount, item.currency)}</span> : null}</div>
     </div>
     {editMode ? <ItemActions item={item} onEdit={onEdit} onDuplicate={onDuplicate} onMove={onMove} onDelete={onDelete} /> : null}
   </article>

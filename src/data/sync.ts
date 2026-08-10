@@ -39,7 +39,7 @@ export function remotePayload(entry: OutboxEntry) {
   }
   if (entry.entity === 'day') return { ...basePayload(payload), date: payload.date, title: payload.title, summary: payload.summary, position: payload.position }
   if (entry.entity === 'item') {
-    const base = basePayload(payload)
+    const base = { ...basePayload(payload), email_url: payload.emailUrl || null }
     switch (payload.kind) {
       case 'activity': return { ...base, day_id: payload.dayId, item_type: 'activity', title: payload.title, start_time: payload.startTime || null, end_time: payload.endTime || null, location_name: payload.location || null, maps_url: payload.mapsUrl || null, description: payload.description, status: normalizeRemoteStatus(payload.status), planned_amount: payload.plannedAmount ?? null, actual_amount: payload.actualAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
       case 'booking': return { ...base, day_id: payload.dayId || null, start_time: payload.startTime || null, display_status: payload.status || null, itinerary_item_id: null, booking_type: 'reservation', title: payload.title, provider: payload.provider || null, location_name: payload.location || null, maps_url: payload.mapsUrl || null, confirmation_code: payload.confirmationCode || null, starts_at: null, ends_at: null, status: normalizeRemoteStatus(payload.status), notes: payload.description, planned_amount: payload.plannedAmount ?? null, actual_amount: payload.actualAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
