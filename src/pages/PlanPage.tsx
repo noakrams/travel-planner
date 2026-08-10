@@ -44,11 +44,11 @@ export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
       <nav className="day-strip" aria-label="Trip days grouped by overnight base">{dayGroups.map((group) => {
         const groupActive = group.days.some((day) => day.id === activeDay?.id)
         const range = groupDateRange(group.days.map((day) => day.date))
-        return <section className={`day-strip-group${groupActive ? ' active-group' : ''}`} key={`${group.label}-${group.days[0].id}`} aria-label={`${group.label}, ${range}`}>
-          <div className="day-strip-group-label"><MapPin aria-hidden="true" /><span>{group.label}</span><small>{range}</small></div>
+        return <section className={`day-strip-group${groupActive ? ' active-group' : ''}`} key={`${group.label}-${group.days[0].id}`} aria-label={`${group.label} stay, ${range}`}>
+          <div className="day-strip-group-label"><span><MapPin aria-hidden="true" />{group.label} stay</span><small>{range}</small></div>
           <div className="day-strip-group-days">{group.days.map((day) => {
             const active = day.id === activeDay?.id
-            return <button className={active ? 'active' : ''} key={day.id} aria-label={`${group.label} — ${format(dateAtNoon(day.date), 'EEE d — EEEE, MMMM d')}${editMode && active ? ' — tap again to edit' : ''}`} onClick={() => {
+            return <button className={active ? 'active' : ''} key={day.id} aria-current={active ? 'date' : undefined} aria-label={`${group.label} — ${format(dateAtNoon(day.date), 'EEE d — EEEE, MMMM d')}${editMode && active ? ' — tap again to edit' : ''}`} onClick={() => {
               if (editMode && active) { setSelectedDay(day.id); setDayEditorOpen(true) }
               else setSelectedDay(day.id)
             }}><span>{format(dateAtNoon(day.date), 'EEE')}</span><strong>{format(dateAtNoon(day.date), 'd')}</strong></button>
