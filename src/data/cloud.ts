@@ -38,17 +38,31 @@ function base(row: Row) {
   }
 }
 
-function remoteTrip(row: Row): Trip {
+const fallbackCoverUrl = 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82'
+
+export function remoteTrip(row: Row, media: MediaRecord[] = []): Trip {
+  const cover = media.find((entry) => entry.id === text(row.cover_photo_id))
   return {
     ...base(row), ownerId: text(row.owner_id), title: text(row.title), subtitle: text(row.subtitle),
     startDate: text(row.start_date), endDate: text(row.end_date), timezone: text(row.timezone, 'UTC'),
     baseCurrency: text(row.base_currency, 'USD'), displayCurrency: normalizeCurrency(row.display_currency),
     budgetAmount: number(row.budget_amount), budgetCurrency: normalizeCurrency(row.budget_currency ?? row.display_currency),
     categoryBudgets: recordOfNumbers(row.category_budgets) as Partial<Record<BudgetCategory, number>>,
-    coverUrl: 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82',
-    coverAlt: 'A scenic destination landscape',
+    coverUrl: cover?.externalUrl ?? fallbackCoverUrl,
+    coverAlt: cover?.altText ?? 'A scenic destination landscape',
     status: text(row.status, 'upcoming') as Trip['status'], shareEnabled: Boolean(row.share_enabled)
   }
+}
+
+export function attachRemoteMedia(items: ContentItem[], media: MediaRecord[]): ContentItem[] {
+  const firstImageByItem = new Map<string, MediaRecord>()
+  for (const entry of media.toSorted((a, b) => a.position - b.position)) {
+    if (entry.itemId && entry.externalUrl && !firstImageByItem.has(entry.itemId)) firstImageByItem.set(entry.itemId, entry)
+  }
+  return items.map((item) => {
+    const image = firstImageByItem.get(item.id)
+    return image ? { ...item, imageUrl: image.externalUrl, imageAlt: image.altText } : item
+  })
 }
 
 export function remoteDay(row: Row): TripDay {
@@ -119,7 +133,7 @@ async function runCloudBootstrap() {
   if (daysResult.error) throw daysResult.error
   for (const result of itemResults) if (result.error) throw result.error
 
-  const items = itemResults.flatMap((result, index) => (result.data ?? []).map((row) => commonItem(row, tableKinds[index][1])))
+  const remoteItems = itemResults.flatMap((result, index) => (result.data ?? []).map((row) => commonItem(row, tableKinds[index][1])))
   const { data: mediaRows, error: mediaError } = await supabase.from('media').select('*').in('trip_id', tripIds).is('deleted_at', null)
   if (mediaError) throw mediaError
   const media: MediaRecord[] = (mediaRows ?? []).map((row) => {
@@ -131,8 +145,9 @@ async function runCloudBootstrap() {
       externalUrl: publicUrl, altText: text(row.alt_text, 'Trip photo'), caption: text(row.caption), position: number(row.position)
     }
   })
+  const items = attachRemoteMedia(remoteItems, media)
   await localRepository.replaceFromCloud({
-    trips: remoteTrips.map(remoteTrip), days: (daysResult.data ?? []).map(remoteDay), items, media
+    trips: remoteTrips.map((trip) => remoteTrip(trip, media)), days: (daysResult.data ?? []).map(remoteDay), items, media
   })
   return { state: 'downloaded' as const }
 }
