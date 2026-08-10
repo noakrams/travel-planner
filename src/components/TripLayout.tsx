@@ -19,7 +19,7 @@ export function TripLayout({ children, readOnly = false }: { children: (context:
   const ownerAccess = useOwnerAccess()
   const canEdit = ownerAccess === 'owner' || ownerAccess === 'editor'
   const editMode = editRequested && canEdit
-  const { state: syncState, error: syncError, retry: retrySync } = useSync(resolvedId, canEdit)
+  const { state: syncState, error: syncError, retry: retrySync } = useSync(resolvedId, canEdit && !readOnly)
   const toggleEdit = () => {
     if (editMode) {
       setEditRequested(false)

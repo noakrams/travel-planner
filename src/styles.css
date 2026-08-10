@@ -218,7 +218,7 @@ h3 { line-height: 1.04; }
 .poster-copy > span { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: .78rem; font-weight: 760; }
 .poster-duplicate { position: absolute; z-index: 3; top: 18px; right: 18px; display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px; border: 1px solid rgb(255 255 255 / 35%); border-radius: 999px; background: rgb(255 255 255 / 88%); color: var(--ink); font-size: .7rem; font-weight: 760; backdrop-filter: blur(10px); }
 
-.collection-page, .budget-page, .utility-panel, .shared-plan { width: min(1180px, calc(100% - 44px)); margin: 0 auto; padding: clamp(64px, 8vw, 104px) 0; }
+.collection-page, .budget-page, .utility-panel { width: min(1180px, calc(100% - 44px)); margin: 0 auto; padding: clamp(64px, 8vw, 104px) 0; }
 .collection-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 44px; }
 .collection-heading h2 { margin-bottom: 14px; }
 .collection-heading > div > p:last-child { max-width: 630px; margin-bottom: 0; color: var(--atlas-muted); line-height: 1.65; }
@@ -287,12 +287,6 @@ h3 { line-height: 1.04; }
 .auth-panel label { display: grid; gap: 7px; font-size: .76rem; font-weight: 750; }
 .auth-panel input { min-height: 48px; padding: 0 13px; border: 1px solid var(--line-strong); border-radius: 13px; }
 .auth-message { margin: 0; color: var(--danger) !important; font-size: .75rem; }
-
-.shared-plan > h2 { margin-bottom: 60px; }
-.shared-plan > section { padding: 46px 0; border-top: 1px solid var(--line); }
-.shared-plan > section > h3 { margin-bottom: 8px; font-size: 2rem; }
-.shared-plan > section > p { color: var(--atlas-muted); }
-.shared-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 26px; }
 
 .editor-dialog, .settings-dialog, .budget-settings-dialog { max-height: min(90dvh, 900px); overflow-y: auto; border-radius: 26px; padding: 28px; background: var(--surface); box-shadow: var(--shadow-float); }
 .editor-dialog { width: min(760px, calc(100% - 28px)); max-width: 760px; }
@@ -452,7 +446,7 @@ h3 { line-height: 1.04; }
   .trip-poster, .trip-poster:nth-child(3n + 1) { min-height: 540px; margin-bottom: 15px; border-radius: 23px; }
   .poster-copy { right: 22px; bottom: 22px; left: 22px; }
   .poster-copy h2 { font-size: 3.25rem; }
-  .collection-page, .budget-page, .utility-panel, .shared-plan { width: calc(100% - 26px); padding: 52px 0; }
+  .collection-page, .budget-page, .utility-panel { width: calc(100% - 26px); padding: 52px 0; }
   .collection-heading, .budget-heading { align-items: flex-start; flex-direction: column; }
   .collection-heading .pill { width: 100%; }
   .collection-row { grid-template-columns: 1fr 46px; gap: 11px; padding: 20px; }
@@ -462,7 +456,6 @@ h3 { line-height: 1.04; }
   .utility-actions { margin-top: 25px; }
   .auth-panel { display: block; width: calc(100% - 26px); padding: 26px; }
   .auth-actions, .auth-panel form { margin-top: 25px; }
-  .shared-items { grid-template-columns: 1fr; }
   .budget-heading-actions { width: 100%; align-items: stretch; flex-direction: column; }
   .display-currency { width: 100%; }
   .budget-hero { grid-template-columns: 1fr 1fr; border-radius: 22px; }

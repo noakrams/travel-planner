@@ -14,16 +14,16 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { SortableItineraryStop } from '../components/SortableItineraryStop'
 
-export function PlanPage() {
-  const { tripId = '' } = useParams()
-  const mutations = useTravelMutations(tripId)
+export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
+  const { tripId } = useParams()
+  const mutations = useTravelMutations(readOnly ? undefined : tripId)
   const [editing, setEditing] = useState<ContentItem | undefined>()
   const [editorOpen, setEditorOpen] = useState(false)
   const [selectedDay, setSelectedDay] = useState<string>()
   const [deletedId, setDeletedId] = useState<string>()
   const [dayEditorOpen, setDayEditorOpen] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
-  return <TripLayout>{({ trip, days, items, editMode }) => {
+  return <TripLayout readOnly={readOnly}>{({ trip, days, items, editMode }) => {
     const activeDay = days.find((day) => day.id === selectedDay) ?? days[0]
     const dayItems = items.filter((item) => item.dayId === activeDay?.id)
     const routes = items.filter((item) => item.kind === 'route')
@@ -47,9 +47,9 @@ export function PlanPage() {
           <section className="aside-quote"><p>“The best plan leaves enough room for the place itself.”</p></section>
         </aside>
       </div>
-      {activeDay ? <EditorDialog open={editorOpen} onOpenChange={setEditorOpen} tripId={trip.id} dayId={activeDay.id} initial={editing} defaultCurrency={trip.displayCurrency} onSave={mutations.saveItem.mutateAsync} /> : null}
-      <DayEditorDialog key={`${selectedDay ?? 'new'}-${dayEditorOpen}`} open={dayEditorOpen} onOpenChange={setDayEditorOpen} tripId={trip.id} day={selectedDay ? activeDay : undefined} onSave={mutations.saveDay.mutateAsync} onDelete={activeDay ? () => mutations.deleteRecord.mutate({ entity: 'day', id: activeDay.id }) : undefined} onDuplicate={activeDay ? () => { mutations.duplicateDay.mutate(activeDay); setDayEditorOpen(false) } : undefined} onMove={activeDay ? (delta) => mutations.moveDay.mutate({ day: activeDay, delta, siblings: days }) : undefined} />
-      {deletedId ? <UndoToast message="Item deleted" onUndo={() => { mutations.restoreRecord.mutate({ entity: 'item', id: deletedId }); setDeletedId(undefined) }} onDismiss={() => setDeletedId(undefined)} /> : null}
+      {!readOnly && activeDay ? <EditorDialog open={editorOpen} onOpenChange={setEditorOpen} tripId={trip.id} dayId={activeDay.id} initial={editing} defaultCurrency={trip.displayCurrency} onSave={mutations.saveItem.mutateAsync} /> : null}
+      {!readOnly ? <DayEditorDialog key={`${selectedDay ?? 'new'}-${dayEditorOpen}`} open={dayEditorOpen} onOpenChange={setDayEditorOpen} tripId={trip.id} day={selectedDay ? activeDay : undefined} onSave={mutations.saveDay.mutateAsync} onDelete={activeDay ? () => mutations.deleteRecord.mutate({ entity: 'day', id: activeDay.id }) : undefined} onDuplicate={activeDay ? () => { mutations.duplicateDay.mutate(activeDay); setDayEditorOpen(false) } : undefined} onMove={activeDay ? (delta) => mutations.moveDay.mutate({ day: activeDay, delta, siblings: days }) : undefined} /> : null}
+      {!readOnly && deletedId ? <UndoToast message="Item deleted" onUndo={() => { mutations.restoreRecord.mutate({ entity: 'item', id: deletedId }); setDeletedId(undefined) }} onDismiss={() => setDeletedId(undefined)} /> : null}
     </>
   }}</TripLayout>
 }

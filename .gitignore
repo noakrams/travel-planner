@@ -8,3 +8,12 @@ coverage/
 !.env.example
 *.local
 .DS_Store
+
+# Local Codex workspace and generated design artifacts
+.agents/
+.codex/
+.worktrees/
+artifacts/
+design-system/
+MIGRATION_CONFLICTS.md
+TRAVEL_APP_REBUILD_PLAN.md
