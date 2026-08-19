@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { bootstrapCloudData, type CloudBootstrapResult } from '../data/cloud'
 import { localRepository } from '../data/repository'
-import { getSupabase, hasSupabaseConfig, signInWithGoogle } from '../data/supabase'
+import { getNeon, hasNeonConfig, signInWithGoogle } from '../data/neon'
 
 type GateState = 'checking' | 'downloaded' | CloudBootstrapResult['state'] | 'error'
 
@@ -29,7 +29,7 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
     } catch (error) {
       await localRepository.clearCloudCache()
       queryClient.clear()
-      setMessage(error instanceof Error ? error.message : 'The Supabase itinerary could not be loaded.')
+      setMessage(error instanceof Error ? error.message : 'The Neon itinerary could not be loaded.')
       setState('error')
     }
   }, [queryClient])
@@ -38,9 +38,9 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
     if (testOwner) return
     const initialLoad = window.setTimeout(() => { void load() }, 0)
     let unsubscribe: (() => void) | undefined
-    void getSupabase().then((supabase) => {
-      if (!supabase) return
-      const { data } = supabase.auth.onAuthStateChange(() => window.setTimeout(() => { void load() }, 0))
+    void getNeon().then((neon) => {
+      if (!neon) return
+      const { data } = neon.auth.onAuthStateChange(() => window.setTimeout(() => { void load() }, 0))
       unsubscribe = () => data.subscription.unsubscribe()
     })
     const onOnline = () => { void load() }
@@ -56,7 +56,7 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
   }, [load, testOwner])
 
   if (state === 'downloaded') return children
-  if (state === 'checking') return <main className="page-skeleton" aria-busy="true" aria-label="Loading itinerary from Supabase"><div /><div /><div /></main>
+  if (state === 'checking') return <main className="page-skeleton" aria-busy="true" aria-label="Loading itinerary from Neon"><div /><div /><div /></main>
   return <CloudAccessPage state={state} message={message} onRetry={load} />
 }
 
@@ -74,15 +74,15 @@ function CloudAccessPage({ state, message, onRetry }: { state: Exclude<GateState
     }
   }
   const copy = state === 'offline'
-    ? { eyebrow: 'Connection required', title: 'Connect to load your private trips', detail: 'Private itinerary data is shown only after it has been verified against Supabase.' }
+    ? { eyebrow: 'Connection required', title: 'Connect to load your private trips', detail: 'Private itinerary data is shown only after it has been verified against Neon.' }
     : state === 'unavailable'
-      ? { eyebrow: 'Cloud required', title: 'Supabase is not configured', detail: 'This app no longer displays local fixture or cached itinerary data as a substitute.' }
+      ? { eyebrow: 'Cloud required', title: 'Neon is not configured', detail: 'This app no longer displays local fixture or cached itinerary data as a substitute.' }
       : state === 'denied'
         ? { eyebrow: 'Account not approved', title: 'Use an approved Google account', detail: 'This account cannot open the private planner. Public share links still work without signing in.' }
         : state === 'error'
-          ? { eyebrow: 'Could not verify data', title: 'The private planner is unavailable', detail: message || 'Supabase could not be reached, so cached itinerary data was not displayed.' }
+          ? { eyebrow: 'Could not verify data', title: 'The private planner is unavailable', detail: message || 'Neon could not be reached, so cached itinerary data was not displayed.' }
           : { eyebrow: 'Private planner', title: 'Sign in to manage your trips', detail: 'Friends do not need an account when you send them a read-only share link.' }
-  const canSignIn = hasSupabaseConfig() && state !== 'offline' && state !== 'error'
+  const canSignIn = hasNeonConfig() && state !== 'offline' && state !== 'error'
   return <main className="cloud-access-page">
     <a className="wordmark dark" href="#/">roam<span>·</span></a>
     <section>

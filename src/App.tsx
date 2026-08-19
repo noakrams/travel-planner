@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { TripsPage } from './pages/TripsPage'
 import { UpdatePrompt } from './components/UpdatePrompt'
-import { getSupabase } from './data/supabase'
+import { getNeon } from './data/neon'
 import { CloudDataGate } from './components/CloudDataGate'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ToastProvider } from '@/components/ui/toast'
@@ -39,9 +39,9 @@ function OAuthReturn() {
     const code = params.get('code')
     if (params.get('auth') !== 'callback' || !code) return
     let active = true
-    void getSupabase().then(async (supabase) => {
-      if (!supabase) return
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
+    void getNeon().then(async (neon) => {
+      if (!neon) return
+      const { error } = await neon.auth.exchangeCodeForSession(code)
       if (!active) return
       if (error) console.error('Google sign-in callback failed', error)
       const returnHash = sessionStorage.getItem('roam-auth-return-hash')

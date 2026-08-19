@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 const rpc = vi.hoisted(() => vi.fn())
-vi.mock('./supabase', () => ({ getSupabase: async () => ({ rpc }) }))
+vi.mock('./neon', () => ({ getNeon: async () => ({ rpc }) }))
 
 import { getOrCreateShareToken } from './sharing'
 
@@ -18,7 +18,7 @@ beforeEach(() => {
 
 afterEach(() => { vi.unstubAllGlobals() })
 
-it('reuses a locally remembered token only after Supabase verifies it', async () => {
+it('reuses a locally remembered token only after Neon verifies it', async () => {
   localStorage.setItem('roam-share-token:trip-one', 'verified-token')
   rpc.mockResolvedValueOnce({ data: { trip: { id: 'trip-one' } }, error: null })
 

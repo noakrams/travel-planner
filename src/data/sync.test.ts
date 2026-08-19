@@ -3,7 +3,7 @@ import { db } from './db'
 import type { ContentKind, OutboxEntry } from '../domain/types'
 
 const getUser = vi.hoisted(() => vi.fn(async () => ({ data: { user: null } })))
-vi.mock('./supabase', () => ({ hasSupabaseConfig: () => true, getSupabase: async () => ({ auth: { getUser } }) }))
+vi.mock('./neon', () => ({ hasNeonConfig: () => true, getNeon: async () => ({ auth: { getUser } }) }))
 
 import { normalizeRemoteStatus, remotePayload, synchronizeOutbox, syncErrorMessage } from './sync'
 
@@ -20,7 +20,7 @@ describe('normalizeRemoteStatus', () => {
 })
 
 describe('syncErrorMessage', () => {
-  it('preserves Supabase plain-object error messages', () => {
+  it('preserves Data API plain-object error messages', () => {
     expect(syncErrorMessage({ code: '42501', message: 'new row violates row-level security policy' })).toBe('new row violates row-level security policy')
   })
 })

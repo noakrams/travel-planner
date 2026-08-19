@@ -2,7 +2,7 @@ import { GoogleLogo } from '@phosphor-icons/react/GoogleLogo'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { signInWithGoogle } from '../data/supabase'
+import { signInWithGoogle } from '../data/neon'
 import type { OwnerAccess } from '../hooks/useOwnerAccess'
 
 export function OwnerSignInDialog({ open, onOpenChange, access }: { open: boolean; onOpenChange: (open: boolean) => void; access: OwnerAccess }) {

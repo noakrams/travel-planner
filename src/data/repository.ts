@@ -49,7 +49,7 @@ async function enqueue(
     retryCount: 0, state: 'pending', createdAt: timestamp, updatedAt: timestamp, version: 1
   }
   await db.outbox.add(entry)
-  if (navigator.onLine && !import.meta.env.VITE_SUPABASE_URL) await db.outbox.delete(entry.id)
+  if (navigator.onLine && !import.meta.env.VITE_NEON_DATA_API_URL) await db.outbox.delete(entry.id)
   requestSync(tripId)
 }
 
@@ -78,7 +78,7 @@ export const localRepository = {
     }
   },
   async getSharedTrip(rawToken: string): Promise<TripBundle | undefined> {
-    if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    if (import.meta.env.VITE_NEON_AUTH_URL && import.meta.env.VITE_NEON_DATA_API_URL) {
       const { getRemoteSharedTrip } = await import('./remoteShared')
       return getRemoteSharedTrip(rawToken)
     }

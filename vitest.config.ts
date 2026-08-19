@@ -12,6 +12,6 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     restoreMocks: true,
     exclude: ['tests/e2e/**', 'node_modules/**', '.worktrees/**'],
-    env: { VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' }
+    env: { VITE_NEON_AUTH_URL: '', VITE_NEON_DATA_API_URL: '' }
   }
 })

@@ -1,5 +1,5 @@
 import { db } from './db'
-import { getSupabase, hasSupabaseConfig } from './supabase'
+import { getNeon, hasNeonConfig } from './neon'
 import type { ContentItem, OutboxEntry } from '../domain/types'
 
 const tableForKind = (kind: ContentItem['kind']) => ({
@@ -69,9 +69,9 @@ export async function synchronizeOutbox() {
     const rank = { trip: 0, day: 1, item: 2, media: 3 }
     return rank[a.entity] - rank[b.entity]
   })
-  if (!hasSupabaseConfig()) { await db.outbox.bulkDelete(entries.map((entry) => entry.id)); return { synced: entries.length, failed: 0 } }
-  const supabase = (await getSupabase())!
-  const { data: auth } = await supabase.auth.getUser()
+  if (!hasNeonConfig()) { await db.outbox.bulkDelete(entries.map((entry) => entry.id)); return { synced: entries.length, failed: 0 } }
+  const neon = (await getNeon())!
+  const { data: auth } = await neon.auth.getUser()
   if (!auth.user) {
     const timestamp = new Date().toISOString()
     await Promise.all(entries.map((entry) => db.outbox.update(entry.id, {
@@ -87,28 +87,18 @@ export async function synchronizeOutbox() {
       if (entry.entity === 'media') {
         const media = await db.media.get(entry.entityId)
         if (!media?.blob) throw new Error('The queued photo is no longer available on this device.')
-        const path = `${auth.user.id}/${entry.tripId}/${media.id}.webp`
-        const { error } = await supabase.storage.from('trip-media').upload(path, media.blob, { contentType: media.blob.type, upsert: true })
-        if (error) throw error
-        await db.media.update(media.id, { storagePath: path, updatedAt: new Date().toISOString() })
-        const { error: metadataError } = await supabase.from('media').upsert({
-          id: media.id, trip_id: media.tripId, itinerary_item_id: media.itemId ?? null,
-          source_type: 'upload', storage_path: path, external_url: null, alt_text: media.altText,
-          caption: media.caption, position: media.position, created_at: media.createdAt,
-          updated_at: new Date().toISOString(), deleted_at: media.deletedAt ?? null, version: media.version
-        }, { onConflict: 'id' })
-        if (metadataError) throw metadataError
+        throw new Error('Direct photo uploads are not available yet. Use an external image URL instead.')
       } else {
         const table = entry.entity === 'trip' ? 'trips' : entry.entity === 'day' ? 'trip_days' : tableForKind((entry.payload as ContentItem).kind)
         const outgoing = remotePayload(entry) as Record<string, unknown>
         if (entry.entity === 'trip' && (!outgoing.owner_id || outgoing.owner_id === 'local-owner')) {
           outgoing.owner_id = auth.user.id
         }
-        const { error } = await supabase.from(table).upsert(outgoing, { onConflict: 'id' })
+        const { error } = await neon.from(table).upsert(outgoing, { onConflict: 'id' })
         if (error) throw error
         const shareToken = (entry.payload as { shareToken?: string }).shareToken
         if (entry.entity === 'trip' && shareToken) {
-          const { error: shareError } = await supabase.rpc('set_trip_share_token', { target_trip_id: entry.entityId, raw_token: shareToken, enabled: true })
+          const { error: shareError } = await neon.rpc('set_trip_share_token', { target_trip_id: entry.entityId, raw_token: shareToken, enabled: true })
           if (shareError) throw shareError
         }
       }

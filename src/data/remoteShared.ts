@@ -1,5 +1,5 @@
 import type { ContentItem, TripBundle, TripDay } from '../domain/types'
-import { getSupabase } from './supabase'
+import { getNeon } from './neon'
 import { normalizeCurrency } from '../domain/currency'
 import type { BudgetCategory } from '../domain/types'
 
@@ -17,9 +17,9 @@ const costFields = (row: Record<string, unknown>) => ({
 })
 
 export async function getRemoteSharedTrip(rawToken: string): Promise<TripBundle | undefined> {
-  const supabase = await getSupabase()
-  if (!supabase) return undefined
-  const { data, error } = await supabase.rpc('get_shared_trip', { raw_token: rawToken })
+  const neon = await getNeon()
+  if (!neon) return undefined
+  const { data, error } = await neon.rpc('get_shared_trip', { raw_token: rawToken })
   if (error || !data) return undefined
   const payload = record(data)
   const tripRow = record(payload.trip)
@@ -40,17 +40,14 @@ export async function getRemoteSharedTrip(rawToken: string): Promise<TripBundle 
   for (const row of rows(payload.warnings)) items.push({ ...base(row), ...costFields(row), dayId: text(row.day_id) || undefined, kind: 'warning', title: text(row.title), description: text(row.body), status: text(row.severity) })
   for (const row of rows(payload.expenses)) items.push({ ...base(row), ...costFields(row), kind: 'expense', title: text(row.title), description: text(row.notes), paid: Boolean(row.paid), occurredOn: text(row.occurred_on) || undefined })
   const mediaRows = rows(payload.media)
-  const projectUrl = import.meta.env.VITE_SUPABASE_URL as string
   for (const media of mediaRows) {
     const item = items.find((entry) => entry.id === text(media.itinerary_item_id))
     if (!item) continue
-    const path = text(media.storage_path)
-    item.imageUrl = text(media.external_url) || (path ? `${projectUrl}/storage/v1/object/public/trip-media/${path}` : undefined)
+    item.imageUrl = text(media.external_url) || undefined
     item.imageAlt = text(media.alt_text)
   }
   const coverMedia = mediaRows.find((media) => text(media.id) === text(tripRow.cover_photo_id))
-  const coverPath = text(coverMedia?.storage_path)
-  const coverUrl = text(coverMedia?.external_url) || (coverPath ? `${projectUrl}/storage/v1/object/public/trip-media/${coverPath}` : '')
+  const coverUrl = text(coverMedia?.external_url)
   return {
     trip: {
       id: tripId, ownerId: '', title: text(tripRow.title), subtitle: text(tripRow.subtitle), startDate: text(tripRow.start_date),

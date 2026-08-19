@@ -41,7 +41,7 @@ describe('remote media', () => {
     position: 0, createdAt: timestamp, updatedAt: timestamp, version: 1
   }]
 
-  it('uses the trip cover selected in Supabase', () => {
+  it('uses the trip cover selected in Neon', () => {
     expect(remoteTrip({
       id: 'trip-japan-2026', owner_id: 'owner', title: 'Japan 2026', start_date: '2026-09-18',
       end_date: '2026-10-02', display_currency: 'JPY', cover_photo_id: 'japan-cover',

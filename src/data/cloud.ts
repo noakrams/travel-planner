@@ -1,6 +1,6 @@
 import type { ContentItem, ContentKind, ItemAttachment, MediaRecord, Trip, TripDay } from '../domain/types'
 import { localRepository } from './repository'
-import { getOwnerAccess, getSupabase, hasSupabaseConfig } from './supabase'
+import { getNeon, getOwnerAccess, hasNeonConfig } from './neon'
 import { normalizeCurrency } from '../domain/currency'
 import type { BudgetCategory } from '../domain/types'
 
@@ -109,36 +109,36 @@ export function bootstrapCloudData() {
 }
 
 async function runCloudBootstrap() {
-  if (!hasSupabaseConfig()) return { state: 'unavailable' as const }
+  if (!hasNeonConfig()) return { state: 'unavailable' as const }
   if (!navigator.onLine) return { state: 'offline' as const }
-  const supabase = await getSupabase()
-  if (!supabase) return { state: 'unavailable' as const }
+  const neon = await getNeon()
+  if (!neon) return { state: 'unavailable' as const }
   const access = await getOwnerAccess()
   if (access !== 'owner' && access !== 'editor') return { state: access as 'signed-out' | 'denied' }
-  const { data: auth } = await supabase.auth.getUser()
+  const { data: auth } = await neon.auth.getUser()
   if (!auth.user) return { state: 'signed-out' as const }
 
-  const { data: remoteTrips, error: tripError } = await supabase.from('trips').select('*').is('deleted_at', null)
+  const { data: remoteTrips, error: tripError } = await neon.from('trips').select('*').is('deleted_at', null)
   if (tripError) throw tripError
   if (!remoteTrips?.length) {
     await localRepository.replaceFromCloud({ trips: [], days: [], items: [], media: [] })
     return { state: 'downloaded' as const }
   }
 
-  const tripIds = remoteTrips.map((trip) => text(trip.id))
+  const tripIds = remoteTrips.map((trip: Record<string, unknown>) => text(trip.id))
   const [daysResult, ...itemResults] = await Promise.all([
-    supabase.from('trip_days').select('*').in('trip_id', tripIds).is('deleted_at', null),
-    ...tableKinds.map(([table]) => supabase.from(table).select('*').in('trip_id', tripIds).is('deleted_at', null))
+    neon.from('trip_days').select('*').in('trip_id', tripIds).is('deleted_at', null),
+    ...tableKinds.map(([table]) => neon.from(table).select('*').in('trip_id', tripIds).is('deleted_at', null))
   ])
   if (daysResult.error) throw daysResult.error
   for (const result of itemResults) if (result.error) throw result.error
 
-  const remoteItems = itemResults.flatMap((result, index) => (result.data ?? []).map((row) => commonItem(row, tableKinds[index][1])))
-  const { data: mediaRows, error: mediaError } = await supabase.from('media').select('*').in('trip_id', tripIds).is('deleted_at', null)
+  const remoteItems = itemResults.flatMap((result, index) => (result.data ?? []).map((row: Record<string, unknown>) => commonItem(row, tableKinds[index][1])))
+  const { data: mediaRows, error: mediaError } = await neon.from('media').select('*').in('trip_id', tripIds).is('deleted_at', null)
   if (mediaError) throw mediaError
-  const media: MediaRecord[] = (mediaRows ?? []).map((row) => {
+  const media: MediaRecord[] = (mediaRows ?? []).map((row: Record<string, unknown>) => {
     const storagePath = optionalText(row.storage_path)
-    const publicUrl = storagePath ? supabase.storage.from('trip-media').getPublicUrl(storagePath).data.publicUrl : optionalText(row.external_url)
+    const publicUrl = optionalText(row.external_url)
     return {
       ...base(row), tripId: text(row.trip_id), itemId: optionalText(row.itinerary_item_id),
       sourceType: text(row.source_type, 'external') as MediaRecord['sourceType'], storagePath,
@@ -147,7 +147,7 @@ async function runCloudBootstrap() {
   })
   const items = attachRemoteMedia(remoteItems, media)
   await localRepository.replaceFromCloud({
-    trips: remoteTrips.map((trip) => remoteTrip(trip, media)), days: (daysResult.data ?? []).map(remoteDay), items, media
+    trips: remoteTrips.map((trip: Record<string, unknown>) => remoteTrip(trip, media)), days: (daysResult.data ?? []).map(remoteDay), items, media
   })
   return { state: 'downloaded' as const }
 }

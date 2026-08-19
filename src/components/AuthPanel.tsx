@@ -1,7 +1,7 @@
 import { GoogleLogo } from '@phosphor-icons/react/GoogleLogo'
 import { PaperPlaneTilt } from '@phosphor-icons/react/PaperPlaneTilt'
 import { useEffect, useState } from 'react'
-import { getSupabase, hasSupabaseConfig, sendMagicLink, signInWithGoogle } from '../data/supabase'
+import { getNeon, hasNeonConfig, sendMagicLink, signInWithGoogle } from '../data/neon'
 
 export function AuthPanel() {
   const [email, setEmail] = useState('')
@@ -9,14 +9,14 @@ export function AuthPanel() {
   const [signedInEmail, setSignedInEmail] = useState<string>()
   const [startingSignIn, setStartingSignIn] = useState<'google' | 'email'>()
   useEffect(() => {
-    if (!hasSupabaseConfig()) return
+    if (!hasNeonConfig()) return
     let active = true
     let unsubscribe: (() => void) | undefined
-    void getSupabase().then(async (supabase) => {
-      if (!supabase || !active) return
-      const { data } = await supabase.auth.getUser()
+    void getNeon().then(async (neon) => {
+      if (!neon || !active) return
+      const { data } = await neon.auth.getUser()
       if (active) setSignedInEmail(data.user?.email)
-      const listener = supabase.auth.onAuthStateChange((_event, session) => {
+      const listener = neon.auth.onAuthStateChange((_event: unknown, session: { user: { email?: string } } | null) => {
         if (active) setSignedInEmail(session?.user.email)
       })
       unsubscribe = () => listener.data.subscription.unsubscribe()
@@ -40,13 +40,13 @@ export function AuthPanel() {
       setStartingSignIn(undefined)
     }
   }
-  const signOut = async () => { const supabase = await getSupabase(); await supabase?.auth.signOut(); setSignedInEmail(undefined) }
-  const configured = hasSupabaseConfig()
+  const signOut = async () => { const neon = await getNeon(); await neon?.auth.signOut(); setSignedInEmail(undefined) }
+  const configured = hasNeonConfig()
   return <section className="auth-panel">
     <div>
       <p className="eyebrow">Editor access</p>
       <h2>{signedInEmail ? 'Cloud sync is connected' : 'Your trip, one tap away'}</h2>
-      <p>{signedInEmail ? `Signed in as ${signedInEmail}. This device will remember you, and edits will follow you between devices.` : configured ? 'Continue with your approved Google account. You will stay signed in on this device.' : 'Local mode is active. Add public Supabase credentials to enable owner sign-in and cloud sync.'}</p>
+      <p>{signedInEmail ? `Signed in as ${signedInEmail}. This device will remember you, and edits will follow you between devices.` : configured ? 'Continue with your approved Google account. You will stay signed in on this device.' : 'Local mode is active. Add the public Neon URLs to enable owner sign-in and cloud sync.'}</p>
     </div>
     {signedInEmail
       ? <button className="button secondary" onClick={signOut}>Sign out</button>

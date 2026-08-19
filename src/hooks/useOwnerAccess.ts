@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { getOwnerAccess, getSupabase, hasSupabaseConfig } from '../data/supabase'
+import { getNeon, getOwnerAccess, hasNeonConfig } from '../data/neon'
 
 export type OwnerAccess = 'checking' | 'signed-out' | 'owner' | 'editor' | 'denied' | 'unavailable'
 
 export function useOwnerAccess() {
   const testOwner = import.meta.env.VITE_E2E_OWNER_BYPASS === 'true'
-  const configured = hasSupabaseConfig()
+  const configured = hasNeonConfig()
   const [access, setAccess] = useState<OwnerAccess>(() => testOwner ? 'owner' : configured ? 'checking' : import.meta.env.DEV ? 'owner' : 'signed-out')
 
   useEffect(() => {
@@ -21,9 +21,9 @@ export function useOwnerAccess() {
       }
     }
     void refresh()
-    void getSupabase().then((supabase) => {
-      if (!supabase || !active) return
-      const { data } = supabase.auth.onAuthStateChange(() => window.setTimeout(() => { void refresh() }, 0))
+    void getNeon().then((neon) => {
+      if (!neon || !active) return
+      const { data } = neon.auth.onAuthStateChange(() => window.setTimeout(() => { void refresh() }, 0))
       unsubscribe = () => data.subscription.unsubscribe()
     })
     return () => { active = false; unsubscribe?.() }
