@@ -1,5 +1,6 @@
 import { ArrowClockwise } from '@phosphor-icons/react/ArrowClockwise'
 import { ArrowSquareOut } from '@phosphor-icons/react/ArrowSquareOut'
+import { CaretDown } from '@phosphor-icons/react/CaretDown'
 import { DownloadSimple } from '@phosphor-icons/react/DownloadSimple'
 import { ForkKnife } from '@phosphor-icons/react/ForkKnife'
 import { Gear } from '@phosphor-icons/react/Gear'
@@ -27,6 +28,9 @@ function MoreContent({ trip, items, editMode }: { trip: Trip; items: ContentItem
   const fileRef = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [applicationsOpen, setApplicationsOpen] = useState(false)
+  const [tipsOpen, setTipsOpen] = useState(false)
+  const [toolsOpen, setToolsOpen] = useState(false)
   const exportJson = async () => {
     const raw = await localRepository.exportTrip(trip.id)
     const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }))
@@ -55,29 +59,30 @@ function MoreContent({ trip, items, editMode }: { trip: Trip; items: ContentItem
     </section>
 
     <section className="app-topic" id="applications" aria-labelledby="applications-heading">
-      <div className="topic-heading"><div><p className="eyebrow">Applications</p><h3 id="applications-heading">The five worth keeping close.</h3></div><p>Open the right service straight from your trip—food, rides, bookings, and staying connected.</p></div>
-      <div className="app-grid">
+      <button className="topic-toggle" type="button" aria-expanded={applicationsOpen} aria-controls="applications-content" onClick={() => setApplicationsOpen((open) => !open)}><span className="topic-heading"><span><span className="eyebrow">Applications</span><h3 id="applications-heading">The five worth keeping close.</h3></span><span>Open the right service straight from your trip—food, rides, bookings, and staying connected.</span></span><CaretDown aria-hidden="true" /></button>
+      {applicationsOpen ? <div className="app-grid" id="applications-content">
         <AppLink icon={<ForkKnife />} name="Tabelog" use="Find restaurants" description="Japan’s restaurant guide for choosing where to eat." href="https://tabelog.com/en/" />
         <AppLink icon={<Taxi />} name="GO" use="Call a taxi" description="Request a taxi when trains have stopped or feet are done." href="https://go.goinc.jp/en" />
         <AppLink icon={<Ticket />} name="Klook" use="Book travel extras" description="Attractions, stays, transport, and other trip bookings." href="https://www.klook.com/" />
         <AppLink icon={<WifiHigh />} name="Japan Wi-Fi" use="Find free Wi-Fi" description="Connect to supported public Wi-Fi hotspots across Japan." href="https://www.ntt-bp.net/jw-auto/en/" />
         <AppLink icon={<SimCard />} name="7G eSIM" use="Stay connected" description="Set up mobile data before the trip and top up if needed." href="https://7g.app/" />
-      </div>
+      </div> : null}
     </section>
 
     <section className="tips-topic" id="tips" aria-labelledby="tips-heading">
-      <div><p className="eyebrow">Tips</p><h3 id="tips-heading">Before you fly.</h3></div><div className="tips-content"><p>Complete Visit Japan Web before travelling so your entry details are ready when you land.</p><a className="tip-link" href="https://www.vjw.digital.go.jp/main/#/vjwplo001" target="_blank" rel="noreferrer" aria-label="Open Visit Japan Web to complete your Japan entry form"><IdentificationCard aria-hidden="true" /><span><small>Japan entry</small><strong>Complete the form</strong></span><ArrowSquareOut aria-hidden="true" /></a></div>
+      <button className="topic-toggle" type="button" aria-expanded={tipsOpen} aria-controls="tips-content" onClick={() => setTipsOpen((open) => !open)}><span className="topic-heading"><span><span className="eyebrow">Tips</span><h3 id="tips-heading">Before you fly.</h3></span><span>One practical thing to do before you travel.</span></span><CaretDown aria-hidden="true" /></button>
+      {tipsOpen ? <div className="tips-content" id="tips-content"><p>Complete Visit Japan Web before travelling so your entry details are ready when you land.</p><a className="tip-link" href="https://www.vjw.digital.go.jp/main/#/vjwplo001" target="_blank" rel="noreferrer" aria-label="Open Visit Japan Web to complete your Japan entry form"><IdentificationCard aria-hidden="true" /><span><small>Japan entry</small><strong>Complete the form</strong></span><ArrowSquareOut aria-hidden="true" /></a></div> : null}
     </section>
 
-    <div id="saved"><CollectionPage trip={trip} items={items} kinds={['place', 'food', 'note', 'warning', 'route']} title="Saved finds" intro="Places, food, warnings, notes, and the route—kept out of the day plan until you need them." editMode={editMode} /></div>
-    <section className="utility-panel" id="trip-tools" aria-labelledby="portable-heading"><div><p className="eyebrow">Trip tools</p><h2 id="portable-heading">Sharing & backup</h2><p>Export a complete copy at any time. Imports create a separate trip, so the original stays safe.</p></div><div className="utility-actions">
+    <div id="saved"><CollectionPage trip={trip} items={items} kinds={['place', 'food', 'note', 'warning', 'route']} title="Saved finds" intro="Places, food, warnings, notes, and the route—kept out of the day plan until you need them." editMode={editMode} collapsible /></div>
+    <section className="utility-panel" id="trip-tools" aria-labelledby="portable-heading"><button className="topic-toggle" type="button" aria-expanded={toolsOpen} aria-controls="trip-tools-content" onClick={() => setToolsOpen((open) => !open)}><span><span className="eyebrow">Trip tools</span><h2 id="portable-heading">Sharing & backup</h2><span>Export and share the trip when you need to.</span></span><CaretDown aria-hidden="true" /></button>{toolsOpen ? <div className="utility-actions" id="trip-tools-content">
       <button className="button secondary" onClick={exportJson}><DownloadSimple />Export JSON</button>
       {editMode ? <button className="button secondary" onClick={() => fileRef.current?.click()}><UploadSimple />Import JSON</button> : null}
       {editMode ? <input ref={fileRef} className="visually-hidden" type="file" accept="application/json,.json" onChange={(event) => importJson(event.target.files?.[0])} /> : null}
       {editMode ? <button className="button secondary" onClick={rotateLink}><ArrowClockwise />Rotate share link</button> : null}
       {trip.shareEnabled ? <a className="button secondary" href={`#/share/${trip.shareToken}`}><LinkSimple />Preview shared trip</a> : null}
       {editMode ? <button className="button secondary" onClick={() => setSettingsOpen(true)}><Gear />Trip settings</button> : null}
-    </div>{message ? <p className="inline-message" role="status">{message}</p> : null}</section>{settingsOpen ? <TripSettingsDialog trip={trip} open onOpenChange={setSettingsOpen} /> : null}
+    </div> : null}{message ? <p className="inline-message" role="status">{message}</p> : null}</section>{settingsOpen ? <TripSettingsDialog trip={trip} open onOpenChange={setSettingsOpen} /> : null}
   </>
 }
 
