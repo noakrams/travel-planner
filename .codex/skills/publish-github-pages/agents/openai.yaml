@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish GitHub Pages"
+  short_description: "Safely deploy and verify the travel planner"
+  default_prompt: "Use $publish-github-pages to deploy the current approved changes and verify the live site."

@@ -1,4 +1,4 @@
-import { Plus } from '@phosphor-icons/react/Plus'
+import { ArrowSquareOut, LinkSimple, Paperclip, Plus } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { BidiText } from './BidiText'
 import { EditorDialog } from './EditorDialog'
@@ -17,11 +17,16 @@ export function CollectionPage({ trip, items, kinds, title, intro, editMode }: {
   const visible = items.filter((item) => kinds.includes(item.kind))
   return <section className="collection-page">
     <div className="collection-heading"><div><p className="eyebrow">{trip.title}</p><h2>{title}</h2><p>{intro}</p></div>{editMode ? <button className="pill dark" onClick={() => { setEditing(undefined); setOpen(true) }}><Plus />Add {contentKindLabels[kinds[0]].toLowerCase()}</button> : null}</div>
-    <div className="collection-list">{visible.length ? visible.map((item) => <article className="collection-row" key={item.id}>
+    <div className="collection-list">{visible.length ? visible.map((item) => {
+      const attachments = item.attachments?.length
+        ? item.attachments
+        : item.emailUrl ? [{ id: 'legacy-email', kind: 'email' as const, label: 'Confirmation email', url: item.emailUrl }] : []
+      return <article className="collection-row" key={item.id}>
       <div className={`kind-mark kind-${item.kind}`}><span>{contentKindLabels[item.kind]}</span></div>
-      <div><BidiText as="h3" value={item.title}>{item.title}</BidiText><BidiText as="p" value={item.description}>{item.description}</BidiText><div className="row-meta">{item.startTime ? <span>{item.startTime}</span> : null}{item.location ? <BidiText value={item.location}>{item.location}</BidiText> : null}{item.status ? <span>{item.status}</span> : null}{item.plannedAmount !== undefined && item.currency ? <span>{formatCurrency(item.plannedAmount, item.currency)}</span> : null}</div></div>
+      <div><BidiText as="h3" value={item.title}>{item.title}</BidiText><BidiText as="p" value={item.description}>{item.description}</BidiText><div className="row-meta">{item.startTime ? <span>{item.startTime}</span> : null}{item.location ? <BidiText value={item.location}>{item.location}</BidiText> : null}{item.status ? <span>{item.status}</span> : null}{item.plannedAmount !== undefined && item.currency ? <span>{formatCurrency(item.plannedAmount, item.currency)}</span> : null}</div>{attachments.length ? <div className="collection-documents"><span className="card-documents-label"><Paperclip size={15} aria-hidden="true" />Tickets &amp; booking links</span><div className="card-attachments">{attachments.map((attachment) => <a key={attachment.id} className="card-attachment-link" href={attachment.url} target="_blank" rel="noreferrer" aria-label={`Open ${attachment.label} for ${item.title}`}><LinkSimple size={17} aria-hidden="true" /><span>{attachment.label}</span><ArrowSquareOut size={15} aria-hidden="true" /></a>)}</div></div> : null}</div>
       {editMode ? <ItemActions item={item} onEdit={() => { setEditing(item); setOpen(true) }} onDuplicate={() => mutations.duplicateItem.mutate(item)} onMove={(delta) => mutations.moveItem.mutate({ item, delta, siblings: visible })} onDelete={() => { mutations.deleteRecord.mutate({ entity: 'item', id: item.id }); setDeletedId(item.id) }} /> : null}
-    </article>) : <div className="empty-state"><Plus size={28} /><h3>Nothing here yet.</h3><p>{editMode ? 'Use the add button to keep the first detail.' : 'The owner has not added anything here.'}</p></div>}</div>
+    </article>
+    }) : <div className="empty-state"><Plus size={28} /><h3>Nothing here yet.</h3><p>{editMode ? 'Use the add button to keep the first detail.' : 'The owner has not added anything here.'}</p></div>}</div>
     <EditorDialog open={open} onOpenChange={setOpen} tripId={trip.id} initial={editing} defaultKind={kinds[0]} defaultCurrency={trip.displayCurrency} onSave={mutations.saveItem.mutateAsync} />
     {deletedId ? <UndoToast message="Item deleted" onUndo={() => { mutations.restoreRecord.mutate({ entity: 'item', id: deletedId }); setDeletedId(undefined) }} onDismiss={() => setDeletedId(undefined)} /> : null}
   </section>

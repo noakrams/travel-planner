@@ -12,6 +12,14 @@ coverage/
 # Local Codex workspace and generated design artifacts
 .agents/
 .codex/
+!.codex/
+.codex/*
+!.codex/skills/
+.codex/skills/*
+!.codex/skills/manage-neon-itinerary/
+!.codex/skills/manage-neon-itinerary/**
+!.codex/skills/publish-github-pages/
+!.codex/skills/publish-github-pages/**
 .worktrees/
 artifacts/
 design-system/

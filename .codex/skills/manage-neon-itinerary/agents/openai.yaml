@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manage Neon Itinerary"
+  short_description: "Read and safely update itinerary data in Neon"
+  default_prompt: "Use $manage-neon-itinerary to check or change an itinerary record in the Neon database."
