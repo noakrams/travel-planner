@@ -18,3 +18,4 @@
 - A local SQL or migration file is not a completed itinerary update. Do not present it as completed unless it has been applied to Neon and verified.
 - Keep fixtures limited to development and test placeholders that cannot be mistaken for the user's current plan.
 - Schema changes may still use migrations, but user data mutations must be performed against Neon unless the user explicitly requests a local-only draft.
+- Validate that every hotel stay's check-in and check-out dates align with the itinerary, transport, and adjacent stays; flag any gap or overlap before finalizing the plan.
