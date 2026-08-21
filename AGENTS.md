@@ -1,5 +1,9 @@
 # Repository instructions
 
+## Mobile UI verification
+
+- Before finishing any page change, verify every changed page on both mobile and desktop viewports.
+
 ## Neon is the itinerary source of truth
 
 - Treat Neon project `billowing-leaf-94344196` as the sole source of truth for all user itinerary, booking, stay, transport, place, food, note, warning, route, and expense data.

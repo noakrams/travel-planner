@@ -31,6 +31,57 @@ test('Japan fixture includes the planned Tokyo days from September 18 to 22', as
   await expect(page.getByRole('heading', { name: 'Sensō-ji at opening' })).toBeVisible()
 })
 
+test('mobile stay grouping contains every date without overlapping the next group', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('#/trip/trip-japan-2026')
+
+  const group = page.locator('.day-strip-group').first()
+  const lastDate = page.getByRole('button', { name: /Tue 22/i })
+  const [groupBox, lastDateBox] = await Promise.all([group.boundingBox(), lastDate.boundingBox()])
+
+  expect(groupBox).not.toBeNull()
+  expect(lastDateBox).not.toBeNull()
+  if (!groupBox || !lastDateBox) return
+  expect(lastDateBox.x).toBeGreaterThanOrEqual(groupBox.x)
+  expect(lastDateBox.x + lastDateBox.width).toBeLessThanOrEqual(groupBox.x + groupBox.width + 1)
+})
+
+test('iphone-landscape stay grouping contains every date', async ({ page }) => {
+  await page.goto('#/trip/trip-japan-2026')
+
+  const group = page.locator('.day-strip-group').first()
+  const lastDate = page.getByRole('button', { name: /Tue 22/i })
+  const [groupBox, lastDateBox] = await Promise.all([group.boundingBox(), lastDate.boundingBox()])
+
+  expect(groupBox).not.toBeNull()
+  expect(lastDateBox).not.toBeNull()
+  if (!groupBox || !lastDateBox) return
+  expect(lastDateBox.x + lastDateBox.width).toBeLessThanOrEqual(groupBox.x + groupBox.width + 1)
+})
+
+test('mobile navigation stays clear of itinerary content and the page does not overflow', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('#/trip/trip-japan-2026')
+
+  const navigation = page.locator('.bottom-nav')
+  const dayStrip = page.locator('.day-strip')
+  const heading = page.getByRole('heading', { name: 'Arrive — and nothing else' })
+  const [navigationBox, dayStripBox, headingBox, pageWidth] = await Promise.all([
+    navigation.boundingBox(),
+    dayStrip.boundingBox(),
+    heading.boundingBox(),
+    page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
+  ])
+
+  expect(navigationBox).not.toBeNull()
+  expect(dayStripBox).not.toBeNull()
+  expect(headingBox).not.toBeNull()
+  if (!navigationBox || !dayStripBox || !headingBox) return
+  expect(navigationBox.y + navigationBox.height).toBeLessThanOrEqual(dayStripBox.y + 1)
+  expect(dayStripBox.y + dayStripBox.height).toBeLessThanOrEqual(headingBox.y + 1)
+  expect(pageWidth.scroll).toBe(pageWidth.client)
+})
+
 test('owner can create a mixed-direction itinerary item', async ({ page }) => {
   await page.goto('#/trip/trip-portugal-2026')
   await page.getByRole('button', { name: 'Edit trip' }).click()
@@ -56,7 +107,8 @@ test('owner can create a mixed-direction itinerary item', async ({ page }) => {
     else if (navigationBox) expect(toastBox.y + toastBox.height).toBeLessThan(navigationBox.y)
   } else if (toastBox && viewport) {
     expect(viewport.width - (toastBox.x + toastBox.width)).toBeLessThanOrEqual(24)
-    expect(toastBox.y + toastBox.height).toBeLessThan(viewport.height - 90)
+    expect(viewport.height - (toastBox.y + toastBox.height)).toBeGreaterThanOrEqual(0)
+    expect(viewport.height - (toastBox.y + toastBox.height)).toBeLessThanOrEqual(120)
   }
 })
 
@@ -185,17 +237,24 @@ for (const viewport of [
     await expectInsideViewport(page.getByRole('dialog', { name: 'Create a trip' }), page)
   })
 
-  test(`all primary pages avoid horizontal clipping on ${viewport.name}`, async ({ page }) => {
+  test(`every app route renders without horizontal clipping on ${viewport.name}`, async ({ page }, testInfo) => {
     await page.setViewportSize(viewport)
-    for (const route of [
-      '#/',
-      '#/trip/trip-portugal-2026',
-      '#/trip/trip-portugal-2026/bookings',
-      '#/trip/trip-portugal-2026/budget',
-      '#/trip/trip-portugal-2026/more'
+    for (const [name, route, heading] of [
+      ['trips', '#/', 'Where are you going next?'],
+      ['plan', '#/trip/trip-portugal-2026', 'Arrival in Lisbon'],
+      ['dated-plan', '#/trip/trip-portugal-2026/day/2026-10-08', 'Arrival in Lisbon'],
+      ['bookings', '#/trip/trip-portugal-2026/bookings', 'Bookings'],
+      ['budget', '#/trip/trip-portugal-2026/budget', 'Know what the plan costs.'],
+      ['more', '#/trip/trip-portugal-2026/more', 'More to remember'],
+      ['shared-invalid', '#/share/invalid-test-token', 'This share link is invalid or no longer active.'],
+      ['auth-callback', '#/auth/callback', 'Where are you going next?'],
+      ['unknown-route', '#/not-a-real-page', 'Where are you going next?']
     ]) {
       await page.goto(route)
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
       await expect(page.locator('body')).toHaveJSProperty('scrollWidth', viewport.width)
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await page.screenshot({ path: testInfo.outputPath(`${name}.png`), fullPage: true })
     }
   })
 }
