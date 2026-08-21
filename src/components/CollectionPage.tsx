@@ -9,7 +9,7 @@ import { contentKindLabels } from '../domain/types'
 import { useTravelMutations } from '../hooks/useTravelData'
 import { formatCurrency } from '../domain/currency'
 
-export function CollectionPage({ trip, items, kinds, title, intro, editMode, collapsible = false }: { trip: Trip; items: ContentItem[]; kinds: ContentKind[]; title: string; intro: string; editMode: boolean; collapsible?: boolean }) {
+export function CollectionPage({ trip, items, kinds, title, intro, editMode, collapsible = false, compactHeading = false }: { trip: Trip; items: ContentItem[]; kinds: ContentKind[]; title: string; intro: string; editMode: boolean; collapsible?: boolean; compactHeading?: boolean }) {
   const mutations = useTravelMutations(trip.id)
   const [editing, setEditing] = useState<ContentItem | undefined>()
   const [open, setOpen] = useState(false)
@@ -17,7 +17,7 @@ export function CollectionPage({ trip, items, kinds, title, intro, editMode, col
   const [expanded, setExpanded] = useState(!collapsible)
   const visible = items.filter((item) => kinds.includes(item.kind))
   return <section className="collection-page">
-    <div className="collection-heading">{collapsible ? <button className="collection-toggle" type="button" aria-expanded={expanded} aria-controls="saved-finds-content" onClick={() => setExpanded((open) => !open)}><span><span className="eyebrow">{trip.title}</span><h2>{title}</h2><span>{intro}</span></span><CaretDown aria-hidden="true" /></button> : <div><p className="eyebrow">{trip.title}</p><h2>{title}</h2><p>{intro}</p></div>}{editMode && expanded ? <button className="pill dark" onClick={() => { setEditing(undefined); setOpen(true) }}><Plus />Add {contentKindLabels[kinds[0]].toLowerCase()}</button> : null}</div>
+    <div className="collection-heading">{collapsible ? <button className={`collection-toggle${compactHeading ? ' compact' : ''}`} type="button" aria-expanded={expanded} aria-controls="saved-finds-content" onClick={() => setExpanded((open) => !open)}><span>{compactHeading ? <h2>{title}</h2> : <><span className="eyebrow">{trip.title}</span><h2>{title}</h2><span>{intro}</span></>}</span><CaretDown aria-hidden="true" /></button> : <div><p className="eyebrow">{trip.title}</p><h2>{title}</h2><p>{intro}</p></div>}{editMode && expanded ? <button className="pill dark" onClick={() => { setEditing(undefined); setOpen(true) }}><Plus />Add {contentKindLabels[kinds[0]].toLowerCase()}</button> : null}</div>
     {expanded ? <div className="collection-list" id={collapsible ? 'saved-finds-content' : undefined}>{visible.length ? visible.map((item) => {
       const attachments = item.attachments?.length
         ? item.attachments
