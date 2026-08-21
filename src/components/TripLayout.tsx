@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTravelData'
 import { BottomNav } from './BottomNav'
 import { TripHeader } from './TripHeader'
@@ -9,9 +9,11 @@ import { localRepository } from '../data/repository'
 import { SyncToast } from './SyncToast'
 import { OwnerSignInDialog } from './OwnerSignInDialog'
 import { useOwnerAccess } from '../hooks/useOwnerAccess'
+import type { ContentItem, TripDay } from '../domain/types'
 
 export function TripLayout({ children, readOnly = false }: { children: (context: NonNullable<ReturnType<typeof useTrip>['data']> & { editMode: boolean }) => ReactNode; readOnly?: boolean }) {
   const { tripId, shareToken } = useParams()
+  const navigate = useNavigate()
   const resolvedId = tripId ?? shareToken
   const query = useQuery({ queryKey: [readOnly ? 'shared-trip' : 'trip', resolvedId], queryFn: () => readOnly ? localRepository.getSharedTrip(resolvedId!) : localRepository.getTrip(resolvedId!), enabled: Boolean(resolvedId) })
   const [editRequested, setEditRequested] = useState(() => Boolean(resolvedId && sessionStorage.getItem('roam-edit-after-sign-in') === resolvedId))
@@ -40,10 +42,16 @@ export function TripLayout({ children, readOnly = false }: { children: (context:
   }
   if (query.isLoading) return <main className="page-skeleton" aria-busy="true"><div /><div /><div /></main>
   if (!query.data) return <main className="empty-page"><p className="eyebrow">Trip unavailable</p><h1>{readOnly ? 'This share link is invalid or no longer active.' : 'This trip is not available in Neon.'}</h1><a className="button primary" href="#/">Return to trips</a></main>
+  const tripData = query.data
+  const openSearchResult = (day: TripDay, item?: ContentItem) => {
+    const target = item ? `itinerary-item-${item.id}` : 'day-heading'
+    if (readOnly && shareToken) navigate(`/share/${shareToken}?day=${day.date}`, { state: { itinerarySearchTarget: target } })
+    else navigate(`/trip/${tripData.trip.id}/day/${day.date}`, { state: { itinerarySearchTarget: target } })
+  }
   return <div className="app-shell">
-    <TripHeader trip={query.data.trip} editMode={editMode} onToggleEdit={toggleEdit} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} />
+    <TripHeader trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} />
     {!readOnly ? <BottomNav /> : null}
-    <main>{children({ ...query.data, editMode: readOnly ? false : editMode })}</main>
+    <main>{children({ ...tripData, editMode: readOnly ? false : editMode })}</main>
     {!readOnly ? <SyncToast state={syncState} error={syncError} onRetry={retrySync} onSignIn={() => setSignInOpen(true)} /> : null}
     {!readOnly ? <OwnerSignInDialog open={signInOpen} onOpenChange={changeSignInOpen} access={ownerAccess} /> : null}
   </div>

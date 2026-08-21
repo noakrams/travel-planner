@@ -8,7 +8,7 @@ export function SortableItineraryStop({ item, editMode, onEdit, onDuplicate, onM
   item: ContentItem; editMode: boolean; onEdit: () => void; onDuplicate: () => void; onMove: (delta: -1 | 1) => void; onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id, disabled: !editMode })
-  return <div ref={setNodeRef} className={`journey-stop ${isDragging ? 'is-dragging' : ''}`} style={{ transform: CSS.Transform.toString(transform), transition }}>
+  return <div id={`itinerary-item-${item.id}`} tabIndex={-1} ref={setNodeRef} className={`journey-stop ${isDragging ? 'is-dragging' : ''}`} style={{ transform: CSS.Transform.toString(transform), transition }}>
     <div className="journey-time">{item.startTime ?? '—'}</div><div className="journey-node" aria-hidden="true" />
     <div className="sortable-card-wrap">{editMode ? <button className="drag-handle" {...attributes} {...listeners} aria-label={`Reorder ${item.title}`}><DotsSixVertical size={22} /></button> : null}<ItineraryCard item={item} editMode={editMode} onEdit={onEdit} onDuplicate={onDuplicate} onMove={onMove} onDelete={onDelete} /></div>
   </div>

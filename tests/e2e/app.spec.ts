@@ -82,6 +82,27 @@ test('mobile navigation stays clear of itinerary content and the page does not o
   expect(pageWidth.scroll).toBe(pageWidth.client)
 })
 
+test('mobile trip search finds an activity and jumps to its day', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('#/trip/trip-japan-2026/budget')
+
+  await page.getByRole('button', { name: 'Search trip' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Find it in the trip' })
+  await expectInsideViewport(dialog, page)
+  await expect(page.getByRole('button', { name: 'Close' })).toHaveCSS('width', '44px')
+  await expect(page.getByRole('button', { name: 'Close' })).toHaveCSS('height', '44px')
+
+  await page.getByRole('searchbox', { name: 'Search trip' }).fill('teamLab')
+  await page.getByRole('button', { name: 'Open teamLab Borderless on Monday, September 21' }).click()
+
+  await expect(page).toHaveURL(/#\/trip\/trip-japan-2026\/day\/2026-09-21$/)
+  await expect(page.getByRole('heading', { name: 'teamLab, Tokyo Tower, and the Ginza splurge' })).toBeVisible()
+  const result = page.locator('#itinerary-item-japan-teamlab')
+  await expect(result).toBeVisible()
+  await expect(result).toBeFocused()
+  await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 375)
+})
+
 test('owner can create a mixed-direction itinerary item', async ({ page }) => {
   await page.goto('#/trip/trip-portugal-2026')
   await page.getByRole('button', { name: 'Edit trip' }).click()

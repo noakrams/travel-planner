@@ -4,11 +4,12 @@ import { ShareNetwork } from '@phosphor-icons/react/ShareNetwork'
 import { format } from 'date-fns'
 import { useState } from 'react'
 import { getOrCreateShareToken } from '../data/sharing'
-import type { Trip } from '../domain/types'
+import type { ContentItem, Trip, TripDay } from '../domain/types'
 import { BidiText } from './BidiText'
+import { ItinerarySearch } from './ItinerarySearch'
 import { SyncBadge } from './SyncBadge'
 
-export function TripHeader({ trip, editMode, onToggleEdit, readOnly = false, syncState = 'saved', onRetrySync }: { trip: Trip; editMode: boolean; onToggleEdit: () => void; readOnly?: boolean; syncState?: 'saved' | 'waiting' | 'attention' | 'saving'; onRetrySync?: () => void }) {
+export function TripHeader({ trip, days, items, editMode, onToggleEdit, onSearchSelect, readOnly = false, syncState = 'saved', onRetrySync }: { trip: Trip; days: TripDay[]; items: ContentItem[]; editMode: boolean; onToggleEdit: () => void; onSearchSelect: (day: TripDay, item?: ContentItem) => void; readOnly?: boolean; syncState?: 'saved' | 'waiting' | 'attention' | 'saving'; onRetrySync?: () => void }) {
   const [copied, setCopied] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [shareError, setShareError] = useState('')
@@ -35,6 +36,7 @@ export function TripHeader({ trip, editMode, onToggleEdit, readOnly = false, syn
       <BidiText as="h1" value={trip.title}>{trip.title}</BidiText>
       <BidiText as="p" value={trip.subtitle}>{trip.subtitle}</BidiText>
       <div className="hero-actions">
+        <ItinerarySearch days={days} items={items} onSelect={onSearchSelect} />
         {!readOnly ? <button className={`pill light ${editMode ? 'active' : ''}`} onClick={onToggleEdit}><PencilSimple size={18} />{editMode ? 'Done editing' : 'Edit trip'}</button> : null}
         {!readOnly ? <button className="pill glass" disabled={sharing} onClick={copyShare}><ShareNetwork size={18} />{sharing ? 'Creating link…' : copied ? 'Link copied' : 'Share'}</button> : null}
         {readOnly ? <span className="pill glass"><ArrowSquareOut size={18} />Read-only shared trip</span> : null}
