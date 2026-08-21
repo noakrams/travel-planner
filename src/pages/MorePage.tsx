@@ -31,6 +31,7 @@ function MoreContent({ trip, items, editMode }: { trip: Trip; items: ContentItem
   const [applicationsOpen, setApplicationsOpen] = useState(false)
   const [tipsOpen, setTipsOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
+  const scrollToTopic = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   const exportJson = async () => {
     const raw = await localRepository.exportTrip(trip.id)
     const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }))
@@ -55,7 +56,7 @@ function MoreContent({ trip, items, editMode }: { trip: Trip; items: ContentItem
     <section className="more-intro" aria-labelledby="more-heading">
       <p className="eyebrow">{trip.title} field guide</p>
       <div className="more-intro-copy"><h2 id="more-heading">More, but sorted.</h2><p>Your off-itinerary essentials, arranged by the moment you need them—not by where the app stores them.</p></div>
-      <nav className="more-topic-nav" aria-label="More page topics"><a href="#applications">Applications</a><a href="#tips">Tips</a><a href="#saved">Saved finds</a><a href="#trip-tools">Trip tools</a></nav>
+      <nav className="more-topic-nav" aria-label="More page topics"><button type="button" onClick={() => scrollToTopic('applications')}>Applications</button><button type="button" onClick={() => scrollToTopic('tips')}>Tips</button><button type="button" onClick={() => scrollToTopic('saved')}>Saved finds</button><button type="button" onClick={() => scrollToTopic('trip-tools')}>Trip tools</button></nav>
     </section>
 
     <section className="app-topic" id="applications" aria-labelledby="applications-heading">

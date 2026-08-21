@@ -256,8 +256,8 @@ h3 { line-height: 1.04; }
 .more-intro h2 { max-width: 700px; margin: 0; font-size: clamp(3.5rem, 7.5vw, 7rem); }
 .more-intro-copy > p { max-width: 410px; margin: 0 0 7px; color: var(--atlas-muted); font-size: 1rem; line-height: 1.65; }
 .more-topic-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 38px; }
-.more-topic-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / 62%); color: var(--atlas); font-size: .7rem; font-weight: 800; text-decoration: none; transition: background-color 180ms var(--ease), border-color 180ms var(--ease), color 180ms var(--ease); }
-.more-topic-nav a:hover { border-color: var(--route); background: var(--surface); color: var(--route); }
+.more-topic-nav button { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / 62%); color: var(--atlas); cursor: pointer; font-size: .7rem; font-weight: 800; transition: background-color 180ms var(--ease), border-color 180ms var(--ease), color 180ms var(--ease); }
+.more-topic-nav button:hover { border-color: var(--route); background: var(--surface); color: var(--route); }
 .app-topic { padding: 0 0 clamp(64px, 8vw, 104px); }
 .topic-heading { display: flex; align-items: end; justify-content: space-between; gap: 32px; margin-bottom: 25px; }
 .topic-heading h3, .tips-topic h3 { margin: 0; font-size: clamp(2.25rem, 4.5vw, 4.3rem); }
@@ -547,7 +547,7 @@ h3 { line-height: 1.04; }
   .more-intro-copy, .tips-topic { display: block; }
   .more-intro h2 { margin-bottom: 22px; font-size: clamp(3.35rem, 16vw, 5.1rem); }
   .more-topic-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 28px; }
-  .more-topic-nav a { justify-content: center; padding-inline: 10px; }
+  .more-topic-nav button { justify-content: center; padding-inline: 10px; }
   .app-topic { padding-bottom: 52px; }
   .topic-heading { display: block; margin-bottom: 20px; }
   .topic-heading h3, .tips-topic h3 { font-size: clamp(2.35rem, 11vw, 3.35rem); }
