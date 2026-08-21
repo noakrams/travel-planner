@@ -177,7 +177,7 @@ h3 { line-height: 1.04; }
 .day-strip button.active { background: var(--atlas); color: white; }
 .day-strip .add-day { border-color: var(--line-strong); }
 
-.trip-layout-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: clamp(46px, 7vw, 94px); width: min(1320px, calc(100% - 56px)); margin: 0 auto; padding: clamp(62px, 8vw, 104px) 0 120px; }
+.trip-layout-grid { width: min(1040px, calc(100% - 56px)); margin: 0 auto; padding: clamp(62px, 8vw, 104px) 0 120px; }
 .itinerary-section { min-width: 0; }
 .day-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 50px; }
 .day-base-label { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; margin: 0 0 16px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--atlas); font-size: .72rem; font-weight: 780; }
@@ -222,21 +222,6 @@ h3 { line-height: 1.04; }
 .card-cost small { color: var(--atlas-muted); font-size: .55rem; letter-spacing: .08em; text-transform: uppercase; }
 .card-menu { position: absolute; z-index: 4; top: 12px; right: 12px; border: 1px solid var(--line) !important; background: rgb(255 255 255 / 94%) !important; color: var(--ink) !important; box-shadow: 0 5px 18px rgb(23 33 29 / 12%); }
 .item-menu { min-width: 190px; }
-
-.trip-aside { position: sticky; top: 104px; align-self: start; display: grid; gap: 16px; }
-.trip-aside section { padding: 25px; border: 1px solid var(--line); border-radius: 22px; background: rgb(255 255 255 / 68%); }
-.trip-aside h3 { margin-bottom: 10px; font-size: 1.65rem; }
-.trip-aside p:not(.eyebrow) { color: var(--atlas-muted); line-height: 1.55; }
-.route-list { position: relative; display: grid; gap: 5px; }
-.route-list::before { position: absolute; top: 20px; bottom: 20px; left: 17px; border-left: 2px dashed var(--route); content: ""; }
-.route-list:has(> p)::before { display: none; }
-.route-list a { position: relative; display: flex; align-items: center; gap: 12px; min-height: 54px; text-decoration: none; }
-.route-list a > span { z-index: 1; display: grid; width: 34px; height: 34px; border: 2px solid var(--route); border-radius: 50%; background: var(--surface); font-size: .66rem; font-weight: 800; place-items: center; }
-.route-list strong, .route-list small { display: block; }
-.route-list small { color: var(--atlas-muted); }
-.booking-status { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #dcebea; color: #285758; font-size: .64rem; font-weight: 800; text-transform: uppercase; }
-.trip-aside .aside-quote { border: 0; background: var(--signal); color: var(--ink); }
-.aside-quote p { margin: 0; color: var(--ink) !important; font-family: "Bricolage Grotesque Variable", sans-serif; font-size: 1.35rem; font-weight: 620; letter-spacing: -.035em; }
 
 .cloud-access-page { min-height: 100dvh; padding: clamp(28px, 5vw, 72px); }
 .cloud-access-page > section { display: grid; gap: 20px; width: min(760px, 100%); margin-top: clamp(90px, 14vw, 180px); }
@@ -454,9 +439,7 @@ h3 { line-height: 1.04; }
 }
 
 @media (max-width: 1023px) {
-  .trip-layout-grid { grid-template-columns: 1fr; width: min(820px, calc(100% - 44px)); }
-  .trip-aside { position: static; grid-template-columns: repeat(2, 1fr); }
-  .trip-aside .aside-quote { display: none; }
+  .trip-layout-grid { width: min(820px, calc(100% - 44px)); }
   .budget-hero { grid-template-columns: 1fr 1fr; }
   .budget-total { grid-column: 1 / -1; }
   .budget-metric + .budget-metric { border-left: 1px solid var(--line); }
@@ -495,7 +478,6 @@ h3 { line-height: 1.04; }
   .card-body h3 { font-size: 1.65rem; }
   .card-footer { align-items: flex-start; flex-direction: column; }
   .card-cost { text-align: left; }
-  .trip-aside { grid-template-columns: 1fr; }
   .trips-page { padding-inline: 13px; }
   .trips-header { min-height: 76px; }
   .trips-intro { display: block; padding: 54px 5px 44px; }
