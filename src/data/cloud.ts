@@ -10,6 +10,7 @@ const text = (value: unknown, fallback = '') => typeof value === 'string' ? valu
 const optionalText = (value: unknown) => typeof value === 'string' && value ? value : undefined
 const number = (value: unknown, fallback = 0) => typeof value === 'number' ? value : value == null ? fallback : Number(value)
 const optionalNumber = (value: unknown) => value == null ? undefined : number(value)
+const boolean = (value: unknown) => value === true || value === 'true' || value === 1 || value === '1'
 const timestamp = (value: unknown) => text(value, new Date().toISOString())
 
 function attachments(value: unknown, legacyEmailUrl?: string): ItemAttachment[] {
@@ -79,7 +80,7 @@ export function commonItem(row: Row, kind: ContentKind): ContentItem {
     latitude: optionalNumber(row.latitude), longitude: optionalNumber(row.longitude), geocodedLocation: optionalText(row.geocoded_location),
     originLatitude: optionalNumber(row.origin_latitude), originLongitude: optionalNumber(row.origin_longitude), originGeocodedLocation: optionalText(row.origin_geocoded_location),
     destinationLatitude: optionalNumber(row.destination_latitude), destinationLongitude: optionalNumber(row.destination_longitude), destinationGeocodedLocation: optionalText(row.destination_geocoded_location),
-    mapHidden: Boolean(row.map_hidden),
+    mapHidden: boolean(row.map_hidden),
     emailUrl,
     attachments: attachments(row.attachments, emailUrl),
     provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.display_status ?? row.status),

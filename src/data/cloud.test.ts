@@ -17,6 +17,14 @@ describe('commonItem', () => {
       attachments: [{ id: 'voucher', kind: 'file', label: 'Hotel voucher', url: 'https://example.com/voucher.pdf' }]
     })
   })
+
+  it('does not hide a map pin when the API serializes false as text', () => {
+    expect(commonItem({
+      id: 'japan-shibuya-sky', trip_id: 'trip-japan-2026', title: 'Shibuya Sky',
+      maps_url: 'https://www.google.com/maps/search/?api=1&query=35.6582857,139.7022617',
+      map_hidden: 'false', position: 0, created_at: '', updated_at: '', version: 1
+    }, 'booking').mapHidden).toBe(false)
+  })
 })
 
 describe('remoteDay', () => {

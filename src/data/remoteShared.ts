@@ -8,6 +8,7 @@ const rows = (value: unknown): Record<string, unknown>[] => Array.isArray(value)
 const text = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback
 const number = (value: unknown, fallback = 0) => typeof value === 'number' ? value : fallback
 const optionalNumber = (value: unknown) => typeof value === 'number' ? value : undefined
+const boolean = (value: unknown) => value === true || value === 'true' || value === 1 || value === '1'
 const categoryBudgets = (value: unknown) => value && typeof value === 'object' && !Array.isArray(value) ? value as Partial<Record<BudgetCategory, number>> : {}
 const costFields = (row: Record<string, unknown>) => ({
   plannedAmount: optionalNumber(row.planned_amount),
@@ -19,7 +20,7 @@ const mapFields = (row: Record<string, unknown>) => ({
   latitude: optionalNumber(row.latitude), longitude: optionalNumber(row.longitude), geocodedLocation: text(row.geocoded_location) || undefined,
   originLatitude: optionalNumber(row.origin_latitude), originLongitude: optionalNumber(row.origin_longitude), originGeocodedLocation: text(row.origin_geocoded_location) || undefined,
   destinationLatitude: optionalNumber(row.destination_latitude), destinationLongitude: optionalNumber(row.destination_longitude), destinationGeocodedLocation: text(row.destination_geocoded_location) || undefined,
-  mapHidden: Boolean(row.map_hidden)
+  mapHidden: boolean(row.map_hidden)
 })
 
 export async function getRemoteSharedTrip(rawToken: string): Promise<TripBundle | undefined> {
