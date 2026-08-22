@@ -1,6 +1,6 @@
 import { GoogleLogo } from '@phosphor-icons/react/GoogleLogo'
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { bootstrapCloudData, type CloudBootstrapResult } from '../data/cloud'
 import { localRepository } from '../data/repository'
 import { getNeon, hasNeonConfig, signInWithGoogle } from '../data/neon'
@@ -12,10 +12,12 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [state, setState] = useState<GateState>(testOwner ? 'downloaded' : 'checking')
   const [message, setMessage] = useState('')
+  const lastActivationRefresh = useRef(0)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (background = false) => {
     await Promise.resolve()
-    setState('checking')
+    if (background && await localRepository.pendingCount() > 0) return
+    if (!background) setState('checking')
     setMessage('')
     try {
       const result = await bootstrapCloudData()
@@ -45,13 +47,26 @@ export function CloudDataGate({ children }: { children: ReactNode }) {
     })
     const onOnline = () => { void load() }
     const onOffline = () => { void load() }
+    const refreshOnActivation = () => {
+      const now = Date.now()
+      if (now - lastActivationRefresh.current < 1_000) return
+      lastActivationRefresh.current = now
+      void load(true)
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshOnActivation()
+    }
     addEventListener('online', onOnline)
     addEventListener('offline', onOffline)
+    addEventListener('focus', refreshOnActivation)
+    document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
       clearTimeout(initialLoad)
       unsubscribe?.()
       removeEventListener('online', onOnline)
       removeEventListener('offline', onOffline)
+      removeEventListener('focus', refreshOnActivation)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [load, testOwner])
 

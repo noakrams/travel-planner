@@ -241,7 +241,7 @@ export const localRepository = {
   },
   async pendingCount(tripId?: string) {
     const entries = tripId ? await db.outbox.where('tripId').equals(tripId).toArray() : await db.outbox.toArray()
-    return entries.filter((entry) => entry.state !== 'processing').length
+    return entries.length
   },
   async replaceFromCloud(bundle: { trips: Trip[]; days: TripDay[]; items: ContentItem[]; media: MediaRecord[] }) {
     await db.transaction('rw', db.trips, db.days, db.items, db.media, db.outbox, async () => {
