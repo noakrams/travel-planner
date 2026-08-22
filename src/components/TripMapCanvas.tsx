@@ -1,11 +1,8 @@
-import * as maptilersdk from '@maptiler/sdk'
-import '@maptiler/sdk/dist/maptiler-sdk.css'
 import * as maplibregl from 'maplibre-gl'
 import { useEffect, useRef } from 'react'
 import type { TripMapPoint, TripMapRoute } from '../domain/map'
 
 const apiKey = import.meta.env.VITE_MAPTILER_API_KEY as string | undefined
-if (apiKey) maptilersdk.config.apiKey = apiKey
 const fallbackMapStyle: maplibregl.StyleSpecification = {
   version: 8,
   sources: {},
@@ -40,15 +37,31 @@ const routesGeoJson = (routes: TripMapRoute[]) => ({
   }))
 })
 
+function fitToPoints(map: maplibregl.Map, points: TripMapPoint[], duration = 650) {
+  const located = points.filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude))
+  if (!located.length) return
+  const bounds = new maplibregl.LngLatBounds()
+  for (const point of located) bounds.extend([point.longitude!, point.latitude!])
+  map.fitBounds(bounds, {
+    padding: { top: 104, right: window.innerWidth >= 900 ? 390 : 42, bottom: window.innerWidth >= 900 ? 70 : 260, left: 42 },
+    maxZoom: 14,
+    duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : duration
+  })
+}
+
 export function TripMapCanvas({ points, routes, selectedPointId, repositionPointId, onSelect, onReposition, onReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const callbacksRef = useRef({ onSelect, onReposition, onReady, repositionPointId })
-  const initialDataRef = useRef({ points, routes, selectedPointId })
+  const mapDataRef = useRef({ points, routes, selectedPointId })
 
   useEffect(() => {
     callbacksRef.current = { onSelect, onReposition, onReady, repositionPointId }
   }, [onReady, onReposition, onSelect, repositionPointId])
+
+  useEffect(() => {
+    mapDataRef.current = { points, routes, selectedPointId }
+  }, [points, routes, selectedPointId])
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -58,16 +71,10 @@ export function TripMapCanvas({ points, routes, selectedPointId, repositionPoint
       zoom: 1.5,
       attributionControl: { compact: true }
     }
-    const map: maplibregl.Map = apiKey
-      ? new maptilersdk.Map({
-          ...sharedOptions,
-          style: maptilersdk.MapStyle.STREETS.PASTEL,
-          navigationControl: false,
-          geolocateControl: false,
-          terrainControl: false,
-          projectionControl: false
-        })
-      : new maplibregl.Map({ ...sharedOptions, style: fallbackMapStyle })
+    const map = new maplibregl.Map({
+      ...sharedOptions,
+      style: apiKey ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${encodeURIComponent(apiKey)}` : fallbackMapStyle
+    })
     mapRef.current = map
     const resizeObserver = new ResizeObserver(() => map.resize())
     resizeObserver.observe(containerRef.current)
@@ -75,7 +82,7 @@ export function TripMapCanvas({ points, routes, selectedPointId, repositionPoint
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left')
 
     map.on('load', () => {
-      const initial = initialDataRef.current
+      const initial = mapDataRef.current
       map.addSource('trip-routes', { type: 'geojson', data: routesGeoJson(initial.routes) })
       map.addLayer({
         id: 'trip-route-solid', type: 'line', source: 'trip-routes', filter: ['==', ['get', 'kind'], 'day'],
@@ -130,6 +137,7 @@ export function TripMapCanvas({ points, routes, selectedPointId, repositionPoint
         map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer' })
         map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = '' })
       }
+      fitToPoints(map, initial.points, 0)
       callbacksRef.current.onReady?.()
     })
     map.on('click', (event) => {
@@ -144,11 +152,7 @@ export function TripMapCanvas({ points, routes, selectedPointId, repositionPoint
     ;(map.getSource('trip-points') as maplibregl.GeoJSONSource | undefined)?.setData(pointsGeoJson(points))
     ;(map.getSource('trip-routes') as maplibregl.GeoJSONSource | undefined)?.setData(routesGeoJson(routes))
     if (map.getLayer('trip-points-unclustered')) map.setPaintProperty('trip-points-unclustered', 'circle-radius', ['case', ['==', ['get', 'pointId'], selectedPointId ?? ''], 18, 15])
-    const located = points.filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude))
-    if (!located.length) return
-    const bounds = new maplibregl.LngLatBounds()
-    for (const point of located) bounds.extend([point.longitude!, point.latitude!])
-    map.fitBounds(bounds, { padding: { top: 104, right: window.innerWidth >= 900 ? 390 : 42, bottom: window.innerWidth >= 900 ? 70 : 260, left: 42 }, maxZoom: 14, duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650 })
+    fitToPoints(map, points)
   }, [points, routes, selectedPointId])
 
   useEffect(() => {

@@ -8,7 +8,7 @@ import { format } from 'date-fns'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { TripMapCanvas } from '../components/TripMapCanvas'
 import { TripLayout } from '../components/TripLayout'
-import { buildTripMapPoints, buildTripMapRoutes, mapKindLabels, mappableKinds, pointGeocodedQuery, type TripMapPoint } from '../domain/map'
+import { buildTripMapPoints, buildTripMapRoutes, mapKindLabels, mappableKinds, type TripMapPoint } from '../domain/map'
 import type { ContentItem, ContentKind, TripDay } from '../domain/types'
 import { hasMapGeocoding, persistMapPointCoordinates, resolveMapPointCoordinates } from '../data/mapCoordinates'
 
@@ -18,7 +18,7 @@ export function MapPage() {
   return <TripLayout variant="map">{({ days, items, canEdit, editMode }) => <TripMapContent days={days} items={items} canEdit={canEdit} editMode={editMode} />}</TripLayout>
 }
 
-function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; items: ContentItem[]; canEdit: boolean; editMode: boolean }) {
+function TripMapContent({ days, items: _items, canEdit, editMode }: { days: TripDay[]; items: ContentItem[]; canEdit: boolean; editMode: boolean }) {
   const [selectedDayIds, setSelectedDayIds] = useState<Set<string>>(new Set())
   const [selectedKinds, setSelectedKinds] = useState<Set<ContentKind>>(new Set(mappableKinds))
   const [selectedPointId, setSelectedPointId] = useState<string>()
@@ -29,7 +29,20 @@ function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; i
   const [locationStatus, setLocationStatus] = useState('')
   const attempted = useRef(new Set<string>())
   const showAllDays = selectedDayIds.size === 0
-  const allPoints = useMemo(() => buildTripMapPoints(items, days).map((point) => ({ ...point, ...coordinateOverrides[point.id] })), [coordinateOverrides, days, items])
+  const mapItems = useMemo(() => days.flatMap((day) => day.baseLocation ? [{
+    id: `map-base-${day.id}`,
+    tripId: day.tripId,
+    dayId: day.id,
+    kind: 'route' as const,
+    title: day.baseLocation,
+    description: 'Overnight base',
+    location: `${day.baseLocation}, Japan`,
+    position: day.position,
+    createdAt: day.createdAt,
+    updatedAt: day.updatedAt,
+    version: day.version
+  }] : []), [days])
+  const allPoints = useMemo(() => buildTripMapPoints(mapItems, days).map((point) => ({ ...point, ...coordinateOverrides[point.id] })), [coordinateOverrides, days, mapItems])
   const visiblePoints = useMemo(() => allPoints.filter((point) => {
     if (!selectedKinds.has(point.item.kind)) return false
     if (showAllDays) return true
@@ -45,32 +58,38 @@ function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; i
     const locate = async () => {
       const unresolved = allPoints.filter((point) => {
         const missing = !Number.isFinite(point.latitude) || !Number.isFinite(point.longitude)
-        const previousQuery = pointGeocodedQuery(point.item, point.role)
-        const stale = Boolean(previousQuery && previousQuery !== point.query)
-        return (missing || stale) && !attempted.current.has(`${point.id}:${point.query}`)
+        return missing && !attempted.current.has(`${point.id}:${point.query}`)
       })
       if (!unresolved.length) return
       if (!hasMapGeocoding() && unresolved.every((point) => !point.item.mapsUrl)) return
       setLocationStatus(`Locating ${unresolved.length} ${unresolved.length === 1 ? 'place' : 'places'}…`)
       let located = 0
+      const coordinatesByQuery = new Map<string, CoordinateOverride>()
+      const updates: Record<string, CoordinateOverride> = {}
       for (const point of unresolved) {
         if (!active) return
         attempted.current.add(`${point.id}:${point.query}`)
         try {
-          const coordinates = await resolveMapPointCoordinates(point)
+          const coordinates = coordinatesByQuery.get(point.query) ?? await resolveMapPointCoordinates(point)
           if (!coordinates || !active) continue
-          setCoordinateOverrides((current) => ({ ...current, [point.id]: coordinates }))
-          if (canEdit) await persistMapPointCoordinates(point, coordinates)
+          coordinatesByQuery.set(point.query, coordinates)
+          updates[point.id] = coordinates
           located += 1
         } catch {
           // Ambiguous or unavailable places remain visible in the count and can be corrected later.
         }
       }
-      if (active) setLocationStatus(located ? `${located} ${located === 1 ? 'place' : 'places'} located` : '')
+      for (const point of unresolved) {
+        const coordinates = coordinatesByQuery.get(point.query)
+        if (coordinates) updates[point.id] = coordinates
+      }
+      if (!active) return
+      if (located) setCoordinateOverrides((current) => ({ ...current, ...updates }))
+      setLocationStatus(located ? `${located} ${located === 1 ? 'place' : 'places'} located` : '')
     }
     void locate()
     return () => { active = false }
-  }, [allPoints, canEdit])
+  }, [allPoints])
 
   const toggleDay = (dayId: string) => setSelectedDayIds((current) => {
     const next = new Set(current)
