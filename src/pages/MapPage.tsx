@@ -15,10 +15,10 @@ import { coordinatesFromMapsUrl, hasMapGeocoding, persistMapPointCoordinates, re
 type CoordinateOverride = { latitude: number; longitude: number }
 
 export function MapPage() {
-  return <TripLayout variant="map">{({ days, items, canEdit, editMode }) => <TripMapContent days={days} items={items} canEdit={canEdit} editMode={editMode} />}</TripLayout>
+  return <TripLayout variant="map">{({ days, items, editMode }) => <TripMapContent days={days} items={items} editMode={editMode} />}</TripLayout>
 }
 
-function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; items: ContentItem[]; canEdit: boolean; editMode: boolean }) {
+function TripMapContent({ days, items, editMode }: { days: TripDay[]; items: ContentItem[]; editMode: boolean }) {
   const [selectedDayIds, setSelectedDayIds] = useState<Set<string>>(new Set())
   const [selectedKinds, setSelectedKinds] = useState<Set<ContentKind>>(new Set(mappableKinds))
   const [selectedPointId, setSelectedPointId] = useState<string>()
