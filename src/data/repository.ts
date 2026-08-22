@@ -150,7 +150,11 @@ export const localRepository = {
     const item: ContentItem = {
       id: input.id ?? crypto.randomUUID(), tripId: input.tripId, dayId: input.dayId,
       kind: input.kind, title: input.title, description: input.description ?? '', startTime: input.startTime,
-      endTime: input.endTime, location: input.location, mapsUrl: input.mapsUrl, emailUrl: input.emailUrl,
+      endTime: input.endTime, location: input.location, origin: input.origin, mapsUrl: input.mapsUrl, emailUrl: input.emailUrl,
+      latitude: input.latitude, longitude: input.longitude, geocodedLocation: input.geocodedLocation,
+      originLatitude: input.originLatitude, originLongitude: input.originLongitude, originGeocodedLocation: input.originGeocodedLocation,
+      destinationLatitude: input.destinationLatitude, destinationLongitude: input.destinationLongitude, destinationGeocodedLocation: input.destinationGeocodedLocation,
+      mapHidden: input.mapHidden ?? existing?.mapHidden ?? false,
       attachments: input.attachments ?? existing?.attachments ?? [], provider: input.provider,
       confirmationCode: input.confirmationCode, status: input.status, position: input.position ?? existing?.position ?? await db.items.where('tripId').equals(input.tripId).count(),
       imageUrl: input.imageUrl, imageAlt: input.imageAlt, plannedAmount: input.plannedAmount, actualAmount: input.actualAmount,
@@ -160,6 +164,11 @@ export const localRepository = {
     await db.items.put(item)
     await enqueue(item.tripId, 'item', item.id, existing ? 'update' : 'create', item, existing?.version ?? 0)
     return item
+  },
+  async cacheMapCoordinates(itemId: string, patch: Partial<ContentItem>) {
+    const existing = await db.items.get(itemId)
+    if (!existing) return
+    await db.items.put({ ...existing, ...patch, updatedAt: now(), version: existing.version + 1 })
   },
   async softDelete(entity: 'trip' | 'day' | 'item', id: string): Promise<void> {
     const table = entity === 'trip' ? db.trips : entity === 'day' ? db.days : db.items

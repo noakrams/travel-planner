@@ -68,7 +68,18 @@ export interface ContentItem extends BaseRecord {
   startTime?: string
   endTime?: string
   location?: string
+  origin?: string
   mapsUrl?: string
+  latitude?: number
+  longitude?: number
+  geocodedLocation?: string
+  originLatitude?: number
+  originLongitude?: number
+  originGeocodedLocation?: string
+  destinationLatitude?: number
+  destinationLongitude?: number
+  destinationGeocodedLocation?: string
+  mapHidden?: boolean
   emailUrl?: string
   attachments?: ItemAttachment[]
   provider?: string

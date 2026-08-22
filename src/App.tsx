@@ -12,6 +12,7 @@ const SharedTripPage = lazy(() => import('./pages/SharedTripPage').then((module)
 const BudgetPage = lazy(() => import('./pages/BudgetPage'))
 const BookingsPage = lazy(() => import('./pages/BookingsPage').then((module) => ({ default: module.BookingsPage })))
 const MorePage = lazy(() => import('./pages/MorePage').then((module) => ({ default: module.MorePage })))
+const MapPage = lazy(() => import('./pages/MapPage').then((module) => ({ default: module.MapPage })))
 
 export function App() {
   return <TooltipProvider delayDuration={350}><ToastProvider><OAuthReturn /><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus() }}>Skip to main content</a><div id="main-content" tabIndex={-1}><Routes>
@@ -27,6 +28,7 @@ function PrivateRoutes() {
       <Route path="/trip/:tripId" element={<Suspense fallback={<PageSkeleton />}><PlanPage /></Suspense>} />
       <Route path="/trip/:tripId/day/:date" element={<Suspense fallback={<PageSkeleton />}><PlanPage /></Suspense>} />
       <Route path="/trip/:tripId/bookings" element={<Suspense fallback={<PageSkeleton />}><BookingsPage /></Suspense>} />
+      <Route path="/trip/:tripId/map" element={<Suspense fallback={<PageSkeleton />}><MapPage /></Suspense>} />
       <Route path="/trip/:tripId/budget" element={<Suspense fallback={<PageSkeleton />}><BudgetPage /></Suspense>} />
       <Route path="/trip/:tripId/more" element={<Suspense fallback={<PageSkeleton />}><MorePage /></Suspense>} />
       <Route path="*" element={<Navigate to="/" replace />} />

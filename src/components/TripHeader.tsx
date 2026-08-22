@@ -1,6 +1,8 @@
 import { ArrowSquareOut } from '@phosphor-icons/react/ArrowSquareOut'
 import { PencilSimple } from '@phosphor-icons/react/PencilSimple'
 import { ShareNetwork } from '@phosphor-icons/react/ShareNetwork'
+import { DotsThreeCircle } from '@phosphor-icons/react/DotsThreeCircle'
+import { Check } from '@phosphor-icons/react/Check'
 import { format } from 'date-fns'
 import { useState } from 'react'
 import { getOrCreateShareToken } from '../data/sharing'
@@ -9,7 +11,7 @@ import { BidiText } from './BidiText'
 import { ItinerarySearch } from './ItinerarySearch'
 import { SyncBadge } from './SyncBadge'
 
-export function TripHeader({ trip, days, items, editMode, onToggleEdit, onSearchSelect, readOnly = false, syncState = 'saved', onRetrySync }: { trip: Trip; days: TripDay[]; items: ContentItem[]; editMode: boolean; onToggleEdit: () => void; onSearchSelect: (day: TripDay, item?: ContentItem) => void; readOnly?: boolean; syncState?: 'saved' | 'waiting' | 'attention' | 'saving'; onRetrySync?: () => void }) {
+export function TripHeader({ trip, days, items, editMode, onToggleEdit, onSearchSelect, readOnly = false, syncState = 'saved', onRetrySync, compact = false }: { trip: Trip; days: TripDay[]; items: ContentItem[]; editMode: boolean; onToggleEdit: () => void; onSearchSelect: (day: TripDay, item?: ContentItem) => void; readOnly?: boolean; syncState?: 'saved' | 'waiting' | 'attention' | 'saving'; onRetrySync?: () => void; compact?: boolean }) {
   const [copied, setCopied] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [shareError, setShareError] = useState('')
@@ -27,6 +29,15 @@ export function TripHeader({ trip, days, items, editMode, onToggleEdit, onSearch
       setSharing(false)
     }
   }
+  if (compact) return <header className="map-page-header">
+    <a className="wordmark dark" href="#/" aria-label="Roam trips">roam<span>·</span></a>
+    <div className="map-page-trip-title"><strong>{trip.title}</strong><span>{format(new Date(`${trip.startDate}T12:00:00`), 'MMM d')} — {format(new Date(`${trip.endDate}T12:00:00`), 'MMM d, yyyy')}</span></div>
+    <div className="map-page-header-actions">
+      <SyncBadge state={syncState} onRetry={onRetrySync} />
+      {!readOnly ? <button type="button" className={`map-header-action${editMode ? ' active' : ''}`} aria-label={editMode ? 'Done editing map' : 'Edit map'} onClick={onToggleEdit}>{editMode ? <Check /> : <PencilSimple />}</button> : null}
+      <a className="map-header-action" href={`#/trip/${trip.id}/more`} aria-label="More and trip settings"><DotsThreeCircle /></a>
+    </div>
+  </header>
   return <header className="trip-hero">
     {trip.coverUrl ? <img src={trip.coverUrl} alt={trip.coverAlt} width="1800" height="1000" fetchPriority="high" /> : null}
     <div className="hero-scrim" />
@@ -39,6 +50,7 @@ export function TripHeader({ trip, days, items, editMode, onToggleEdit, onSearch
         <ItinerarySearch days={days} items={items} onSelect={onSearchSelect} />
         {!readOnly ? <button className={`pill light ${editMode ? 'active' : ''}`} onClick={onToggleEdit}><PencilSimple size={18} />{editMode ? 'Done editing' : 'Edit trip'}</button> : null}
         {!readOnly ? <button className="pill glass" disabled={sharing} onClick={copyShare}><ShareNetwork size={18} />{sharing ? 'Creating link…' : copied ? 'Link copied' : 'Share'}</button> : null}
+        {!readOnly ? <a className="pill glass" href={`#/trip/${trip.id}/more`}><DotsThreeCircle size={18} />More</a> : null}
         {readOnly ? <span className="pill glass"><ArrowSquareOut size={18} />Read-only shared trip</span> : null}
       </div>
       {shareError ? <p className="share-error" role="alert">{shareError}</p> : null}

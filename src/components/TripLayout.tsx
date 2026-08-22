@@ -11,7 +11,7 @@ import { OwnerSignInDialog } from './OwnerSignInDialog'
 import { useOwnerAccess } from '../hooks/useOwnerAccess'
 import type { ContentItem, TripDay } from '../domain/types'
 
-export function TripLayout({ children, readOnly = false }: { children: (context: NonNullable<ReturnType<typeof useTrip>['data']> & { editMode: boolean }) => ReactNode; readOnly?: boolean }) {
+export function TripLayout({ children, readOnly = false, variant = 'default' }: { children: (context: NonNullable<ReturnType<typeof useTrip>['data']> & { editMode: boolean; canEdit: boolean }) => ReactNode; readOnly?: boolean; variant?: 'default' | 'map' }) {
   const { tripId, shareToken } = useParams()
   const navigate = useNavigate()
   const resolvedId = tripId ?? shareToken
@@ -48,10 +48,10 @@ export function TripLayout({ children, readOnly = false }: { children: (context:
     if (readOnly && shareToken) navigate(`/share/${shareToken}?day=${day.date}`, { state: { itinerarySearchTarget: target } })
     else navigate(`/trip/${tripData.trip.id}/day/${day.date}`, { state: { itinerarySearchTarget: target } })
   }
-  return <div className="app-shell">
-    <TripHeader trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} />
+  return <div className={`app-shell${variant === 'map' ? ' map-app-shell' : ''}`}>
+    <TripHeader trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} compact={variant === 'map'} />
     {!readOnly ? <BottomNav /> : null}
-    <main>{children({ ...tripData, editMode: readOnly ? false : editMode })}</main>
+    <main>{children({ ...tripData, editMode: readOnly ? false : editMode, canEdit })}</main>
     {!readOnly ? <SyncToast state={syncState} error={syncError} onRetry={retrySync} onSignIn={() => setSignInOpen(true)} /> : null}
     {!readOnly ? <OwnerSignInDialog open={signInOpen} onOpenChange={changeSignInOpen} access={ownerAccess} /> : null}
   </div>

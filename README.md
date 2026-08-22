@@ -33,6 +33,10 @@ The app works in local mode without endpoints. To enable owner authentication, c
 
 7. Copy `.env.example` to `.env.local` and add only the public Neon Auth and Data API URLs.
 
+## Map setup
+
+The trip map is generic and builds its markers and route from location-bearing Neon records. Add a public, domain-restricted MapTiler browser key as `VITE_MAPTILER_API_KEY` to enable the pastel basemap and automatic geocoding. Without a key, the page remains usable with its lightweight fallback map and manual pin placement in edit mode.
+
 The Google button authenticates an account; it does not grant edit access by itself. Database row-level security requires the signed-in user to be either the owner in `public.app_owners` or an approved verified editor. Approved editor emails are normalized and stored only as SHA-256 hashes in the private `private.app_editors` table. Neon Auth browser sessions persist, so an approved user stays signed in on that browser/device until signing out, clearing site data, or a configured session limit expires.
 
 Visitors do not need to sign in. The `#/share/...` itinerary is always read-only and hides editor controls. Owners can create and duplicate trips; approved editors can edit existing trips but cannot create, duplicate, delete, or take ownership of a trip. Keep only Noa Krams's Auth user UUID in `public.app_owners`.

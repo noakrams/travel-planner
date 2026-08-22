@@ -224,6 +224,55 @@ test('primary mobile controls meet the 44px target', async ({ page }) => {
 })
 
 for (const viewport of [
+  { name: 'map-phone', width: 375, height: 812 },
+  { name: 'map-landscape', width: 844, height: 390 },
+  { name: 'map-desktop', width: 1440, height: 1000 }
+]) {
+  test(`trip map is usable on ${viewport.name}`, async ({ page }, testInfo) => {
+    await page.setViewportSize(viewport)
+    await page.goto('#/trip/trip-portugal-2026/map')
+
+    const mapRegion = page.getByRole('region', { name: 'Trip map' })
+    await expect(mapRegion).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Filter map by day' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'All days' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('link', { name: 'Map', exact: true })).toHaveClass(/active/)
+    await page.getByRole('button', { name: 'Edit map' }).click()
+    const canvas = page.locator('.maplibregl-canvas')
+    await expect(canvas).toBeVisible()
+    const landscape = viewport.name === 'map-landscape'
+    const placements = [
+      ['Place Arrive at Humberto Delgado Airport — destination', { x: 90, y: landscape ? 100 : 260 }],
+      ['Place Check in at Memmo Alfama', { x: 180, y: landscape ? 145 : 310 }],
+      ['Place Miradouro at blue hour', { x: 260, y: landscape ? 85 : 245 }]
+    ] as const
+    for (const [index, [name, position]] of placements.entries()) {
+      await page.getByRole('button', { name: /places? need(?:s)? pins/ }).click()
+      await page.getByRole('button', { name }).click()
+      await page.getByRole('button', { name: 'Move pin' }).click()
+      await canvas.click({ position })
+      if (index < placements.length - 1) await page.getByRole('button', { name: 'Close place details' }).click()
+    }
+    const counts = await mapRegion.evaluate((element) => ({ visible: Number((element as HTMLElement).dataset.visiblePoints), missing: Number((element as HTMLElement).dataset.missingPoints) }))
+    expect(counts.visible).toBeGreaterThan(counts.missing)
+    const details = page.getByLabel('Details for Miradouro at blue hour')
+    await expect(details).toBeVisible()
+
+    const [detailsBox, viewportSize] = await Promise.all([details.boundingBox(), Promise.resolve(page.viewportSize())])
+    expect(detailsBox).not.toBeNull()
+    expect(viewportSize).not.toBeNull()
+    if (detailsBox && viewportSize) {
+      expect(detailsBox.x).toBeGreaterThanOrEqual(0)
+      expect(detailsBox.y).toBeGreaterThanOrEqual(0)
+      expect(detailsBox.x + detailsBox.width).toBeLessThanOrEqual(viewportSize.width + 1)
+      expect(detailsBox.y + detailsBox.height).toBeLessThanOrEqual(viewportSize.height + 1)
+    }
+    await expect(page.locator('body')).toHaveJSProperty('scrollWidth', viewport.width)
+    await page.screenshot({ path: testInfo.outputPath(`${viewport.name}.png`), fullPage: false })
+  })
+}
+
+for (const viewport of [
   { name: 'phone', width: 375, height: 812 },
   { name: 'desktop', width: 1440, height: 1000 }
 ]) {
