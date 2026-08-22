@@ -30,11 +30,24 @@ export function coordinatesFromMapsUrl(rawUrl?: string): Coordinates | undefined
   }
 }
 
+function geocodingQueryFromMapsUrl(rawUrl?: string): string | undefined {
+  if (!rawUrl) return undefined
+  try {
+    const url = new URL(rawUrl)
+    if (!/(^|\.)google\.[a-z.]+$/i.test(url.hostname)) return undefined
+    const query = url.searchParams.get('query') ?? url.searchParams.get('q') ?? ''
+    return query.trim() || undefined
+  } catch {
+    return undefined
+  }
+}
+
 export async function resolveMapPointCoordinates(point: TripMapPoint): Promise<Coordinates | undefined> {
   const fromUrl = point.role !== 'origin' ? coordinatesFromMapsUrl(point.item.mapsUrl) : undefined
   if (fromUrl) return fromUrl
-  if (!apiKey || !point.query) return undefined
-  const result = await maptilersdk.geocoding.forward(point.query, { limit: 1 })
+  const query = geocodingQueryFromMapsUrl(point.item.mapsUrl)
+  if (!apiKey || !query) return undefined
+  const result = await maptilersdk.geocoding.forward(query, { limit: 1 })
   const center = result.features[0]?.center
   return center ? validCoordinates(center[1], center[0]) : undefined
 }

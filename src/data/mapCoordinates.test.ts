@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { coordinatesFromMapsUrl } from './mapCoordinates'
+import { coordinatesFromMapsUrl, resolveMapPointCoordinates } from './mapCoordinates'
 
 describe('map coordinate parsing', () => {
   it('reads coordinates from a Google Maps query', () => {
@@ -12,5 +12,12 @@ describe('map coordinate parsing', () => {
 
   it('rejects invalid coordinate ranges', () => {
     expect(coordinatesFromMapsUrl('https://maps.google.com/?q=190,800')).toBeUndefined()
+  })
+
+  it('does not geocode an external booking page', async () => {
+    await expect(resolveMapPointCoordinates({
+      id: 'camellia:location', role: 'location', label: 'Camellia', query: 'Official Camellia booking page',
+      item: { id: 'camellia', kind: 'booking', mapsUrl: 'https://tea-kyoto.com/reservation/flower/' }
+    } as never)).resolves.toBeUndefined()
   })
 })
