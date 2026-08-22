@@ -10,7 +10,7 @@ import { TripMapCanvas } from '../components/TripMapCanvas'
 import { TripLayout } from '../components/TripLayout'
 import { buildTripMapPoints, buildTripMapRoutes, mapKindLabels, mappableKinds, type TripMapPoint } from '../domain/map'
 import type { ContentItem, ContentKind, TripDay } from '../domain/types'
-import { hasMapGeocoding, persistMapPointCoordinates, resolveMapPointCoordinates } from '../data/mapCoordinates'
+import { persistMapPointCoordinates } from '../data/mapCoordinates'
 
 type CoordinateOverride = { latitude: number; longitude: number }
 
@@ -27,12 +27,11 @@ function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; i
   const [coordinateOverrides, setCoordinateOverrides] = useState<Record<string, CoordinateOverride>>({})
   const [repositionPointId, setRepositionPointId] = useState<string>()
   const [locationStatus, setLocationStatus] = useState('')
-  const attempted = useRef(new Set<string>())
   const showAllDays = selectedDayIds.size === 0
-  // The map is intentionally driven by the itinerary's curated items rather
-  // than by a generic city pin for every day. This makes each line a useful
-  // sequence of planned stops, and `mapHidden` keeps secondary ideas off it.
-  const mapItems = items
+  // Map pins are intentionally opt-in: only itinerary items with verified
+  // saved coordinates are plotted. This prevents broad or ambiguous names
+  // from being geocoded to an unrelated place elsewhere in the world.
+  const mapItems = useMemo(() => items.filter((item) => !item.mapHidden && Number.isFinite(item.latitude) && Number.isFinite(item.longitude)), [items])
   const allPoints = useMemo(() => buildTripMapPoints(mapItems, days).map((point) => ({ ...point, ...coordinateOverrides[point.id] })), [coordinateOverrides, days, mapItems])
   const visiblePoints = useMemo(() => allPoints.filter((point) => {
     if (!selectedKinds.has(point.item.kind)) return false
@@ -43,44 +42,6 @@ function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; i
   const selectedPoint = allPoints.find((point) => point.id === selectedPointId)
   const missingPoints = visiblePoints.filter((point) => !Number.isFinite(point.latitude) || !Number.isFinite(point.longitude))
   const missingCount = missingPoints.length
-
-  useEffect(() => {
-    let active = true
-    const locate = async () => {
-      const unresolved = allPoints.filter((point) => {
-        const missing = !Number.isFinite(point.latitude) || !Number.isFinite(point.longitude)
-        return missing && !attempted.current.has(`${point.id}:${point.query}`)
-      })
-      if (!unresolved.length) return
-      if (!hasMapGeocoding() && unresolved.every((point) => !point.item.mapsUrl)) return
-      setLocationStatus(`Locating ${unresolved.length} ${unresolved.length === 1 ? 'place' : 'places'}…`)
-      let located = 0
-      const coordinatesByQuery = new Map<string, CoordinateOverride>()
-      const updates: Record<string, CoordinateOverride> = {}
-      for (const point of unresolved) {
-        if (!active) return
-        attempted.current.add(`${point.id}:${point.query}`)
-        try {
-          const coordinates = coordinatesByQuery.get(point.query) ?? await resolveMapPointCoordinates(point)
-          if (!coordinates || !active) continue
-          coordinatesByQuery.set(point.query, coordinates)
-          updates[point.id] = coordinates
-          located += 1
-        } catch {
-          // Ambiguous or unavailable places remain visible in the count and can be corrected later.
-        }
-      }
-      for (const point of unresolved) {
-        const coordinates = coordinatesByQuery.get(point.query)
-        if (coordinates) updates[point.id] = coordinates
-      }
-      if (!active) return
-      if (located) setCoordinateOverrides((current) => ({ ...current, ...updates }))
-      setLocationStatus(located ? `${located} ${located === 1 ? 'place' : 'places'} located` : '')
-    }
-    void locate()
-    return () => { active = false }
-  }, [allPoints])
 
   const toggleDay = (dayId: string) => setSelectedDayIds((current) => {
     const next = new Set(current)
@@ -133,7 +94,6 @@ function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; i
     </aside> : null}
     <TripMapCanvas points={visiblePoints} routes={routes} selectedPointId={selectedPointId} repositionPointId={repositionPointId} onSelect={setSelectedPointId} onReposition={reposition} />
     {!visiblePoints.length ? <div className="map-empty"><MapPin /><h2>No places match these filters.</h2><p>Choose another day or turn on more place types.</p></div> : null}
-    {visiblePoints.length > 0 && visiblePoints.length === missingCount ? <div className="map-empty map-unlocated"><MapPin /><h2>These places need coordinates.</h2><p>{hasMapGeocoding() ? 'We could not confidently locate them. Open an item and add a more specific location.' : editMode ? 'Choose Places need pins to position them manually, or add a MapTiler key for automatic geocoding.' : 'Add a MapTiler browser key to locate itinerary places automatically.'}</p></div> : null}
     {selectedPoint ? <MapDetails point={selectedPoint} editMode={editMode} onClose={() => setSelectedPointId(undefined)} onMove={() => setRepositionPointId(selectedPoint.id)} /> : null}
     <div className="sr-only" aria-label="Visible map places">{visiblePoints.map((point) => <button type="button" key={point.id} onClick={() => setSelectedPointId(point.id)}>Open {point.label}</button>)}</div>
   </section>
