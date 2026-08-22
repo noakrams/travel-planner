@@ -32,6 +32,7 @@ jobs:
         env:
           VITE_NEON_AUTH_URL: ${{ vars.VITE_NEON_AUTH_URL }}
           VITE_NEON_DATA_API_URL: ${{ vars.VITE_NEON_DATA_API_URL }}
+          VITE_MAPTILER_API_KEY: ${{ vars.VITE_MAPTILER_API_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
