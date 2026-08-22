@@ -18,7 +18,7 @@ export function MapPage() {
   return <TripLayout variant="map">{({ days, items, canEdit, editMode }) => <TripMapContent days={days} items={items} canEdit={canEdit} editMode={editMode} />}</TripLayout>
 }
 
-function TripMapContent({ days, items: _items, canEdit, editMode }: { days: TripDay[]; items: ContentItem[]; canEdit: boolean; editMode: boolean }) {
+function TripMapContent({ days, items, canEdit, editMode }: { days: TripDay[]; items: ContentItem[]; canEdit: boolean; editMode: boolean }) {
   const [selectedDayIds, setSelectedDayIds] = useState<Set<string>>(new Set())
   const [selectedKinds, setSelectedKinds] = useState<Set<ContentKind>>(new Set(mappableKinds))
   const [selectedPointId, setSelectedPointId] = useState<string>()
@@ -29,19 +29,10 @@ function TripMapContent({ days, items: _items, canEdit, editMode }: { days: Trip
   const [locationStatus, setLocationStatus] = useState('')
   const attempted = useRef(new Set<string>())
   const showAllDays = selectedDayIds.size === 0
-  const mapItems = useMemo(() => days.flatMap((day) => day.baseLocation ? [{
-    id: `map-base-${day.id}`,
-    tripId: day.tripId,
-    dayId: day.id,
-    kind: 'route' as const,
-    title: day.baseLocation,
-    description: 'Overnight base',
-    location: `${day.baseLocation}, Japan`,
-    position: day.position,
-    createdAt: day.createdAt,
-    updatedAt: day.updatedAt,
-    version: day.version
-  }] : []), [days])
+  // The map is intentionally driven by the itinerary's curated items rather
+  // than by a generic city pin for every day. This makes each line a useful
+  // sequence of planned stops, and `mapHidden` keeps secondary ideas off it.
+  const mapItems = items
   const allPoints = useMemo(() => buildTripMapPoints(mapItems, days).map((point) => ({ ...point, ...coordinateOverrides[point.id] })), [coordinateOverrides, days, mapItems])
   const visiblePoints = useMemo(() => allPoints.filter((point) => {
     if (!selectedKinds.has(point.item.kind)) return false

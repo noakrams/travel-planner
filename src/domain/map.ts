@@ -45,7 +45,17 @@ export function buildTripMapPoints(items: ContentItem[], days: TripDay[]): TripM
   const counters = new Map<string, number>()
   const points: TripMapPoint[] = []
 
-  for (const item of items) {
+  // Content arrives from separate database tables. Sort it here so pins and
+  // route lines follow the day's actual schedule rather than table order.
+  const orderedItems = items.toSorted((a, b) => {
+    const aDayIndex = a.dayId ? dayById.get(a.dayId)?.index ?? Number.MAX_SAFE_INTEGER : Number.MAX_SAFE_INTEGER
+    const bDayIndex = b.dayId ? dayById.get(b.dayId)?.index ?? Number.MAX_SAFE_INTEGER : Number.MAX_SAFE_INTEGER
+    if (aDayIndex !== bDayIndex) return aDayIndex - bDayIndex
+    const timeDifference = (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99')
+    return timeDifference || a.position - b.position || a.id.localeCompare(b.id)
+  })
+
+  for (const item of orderedItems) {
     if (!mappableKinds.includes(item.kind) || item.mapHidden) continue
     const dayEntry = item.dayId ? dayById.get(item.dayId) : undefined
     const dayKey = item.dayId ?? 'unassigned'

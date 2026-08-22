@@ -29,6 +29,15 @@ describe('trip map model', () => {
     expect(points.map((point) => point.role)).toEqual(['origin', 'destination'])
   })
 
+  it('orders same-day pins by their scheduled time across content types', () => {
+    const points = buildTripMapPoints([
+      item({ id: 'later-place', dayId: 'd1', kind: 'place', title: 'Later', location: 'Later', startTime: '16:45:00' }),
+      item({ id: 'first-booking', dayId: 'd1', kind: 'booking', title: 'First', location: 'First', startTime: '10:30:00' }),
+      item({ id: 'middle-activity', dayId: 'd1', kind: 'activity', title: 'Middle', location: 'Middle', startTime: '12:00:00' })
+    ], days)
+    expect(points.map((point) => point.label)).toEqual(['First', 'Middle', 'Later'])
+  })
+
   it('draws solid daily routes and a dashed semantic transition', () => {
     const points = buildTripMapPoints([
       item({ id: 'a', dayId: 'd1', kind: 'place', title: 'A', location: 'A', latitude: 1, longitude: 2, position: 0 }),
