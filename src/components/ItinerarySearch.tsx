@@ -4,7 +4,7 @@ import { MagnifyingGlass } from '@phosphor-icons/react/MagnifyingGlass'
 import { MapPin } from '@phosphor-icons/react/MapPin'
 import { X } from '@phosphor-icons/react/X'
 import { format } from 'date-fns'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useId, useMemo, useState } from 'react'
 import { contentKindLabels, type ContentItem, type TripDay } from '../domain/types'
 import { BidiText } from './BidiText'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
@@ -37,6 +37,7 @@ export function ItinerarySearch({ days, items, onSelect }: {
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const inputId = useId()
   const deferredQuery = useDeferredValue(query)
   const normalizedQuery = searchable(deferredQuery.trim())
 
@@ -85,8 +86,8 @@ export function ItinerarySearch({ days, items, onSelect }: {
         </DialogHeader>
         <div className="itinerary-search-field">
           <MagnifyingGlass aria-hidden="true" />
-          <label className="sr-only" htmlFor="itinerary-search-input">Search trip</label>
-          <input id="itinerary-search-input" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try “teamLab” or “activity”" autoComplete="off" autoFocus />
+          <label className="sr-only" htmlFor={inputId}>Search trip</label>
+          <input id={inputId} type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try “teamLab” or “activity”" autoComplete="off" autoFocus />
           {query ? <button type="button" aria-label="Clear search" onClick={() => setQuery('')}><X aria-hidden="true" /></button> : null}
         </div>
         <div className="itinerary-search-status" role="status" aria-live="polite">

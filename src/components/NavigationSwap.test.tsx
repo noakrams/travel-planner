@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import type { Trip } from '../domain/types'
 import { BottomNav } from './BottomNav'
+import { TripActions } from './TripActions'
 import { TripHeader } from './TripHeader'
 
 const trip: Trip = {
@@ -51,8 +52,8 @@ describe('Trips and More navigation swap', () => {
     expect(screen.queryByRole('link', { name: 'Trips' })).not.toBeInTheDocument()
   })
 
-  it('puts Trips in the full trip header action', () => {
-    render(<TripHeader {...headerProps} />)
+  it('puts Trips in the sticky trip actions', () => {
+    render(<TripActions {...headerProps} />)
 
     expect(screen.getByRole('link', { name: 'Trips' })).toHaveAttribute('href', '#/')
     expect(screen.queryByRole('link', { name: 'More' })).not.toBeInTheDocument()

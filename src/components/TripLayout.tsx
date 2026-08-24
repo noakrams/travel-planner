@@ -10,6 +10,7 @@ import { SyncToast } from './SyncToast'
 import { OwnerSignInDialog } from './OwnerSignInDialog'
 import { useOwnerAccess } from '../hooks/useOwnerAccess'
 import type { ContentItem, TripDay } from '../domain/types'
+import { TripActions } from './TripActions'
 
 export function TripLayout({ children, readOnly = false, variant = 'default' }: { children: (context: NonNullable<ReturnType<typeof useTrip>['data']> & { editMode: boolean; canEdit: boolean }) => ReactNode; readOnly?: boolean; variant?: 'default' | 'map' }) {
   const { tripId, shareToken } = useParams()
@@ -50,7 +51,10 @@ export function TripLayout({ children, readOnly = false, variant = 'default' }: 
   }
   return <div className={`app-shell${variant === 'map' ? ' map-app-shell' : ''}`}>
     <TripHeader trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} compact={variant === 'map'} />
-    {!readOnly ? <BottomNav /> : null}
+    {!readOnly ? variant === 'map' ? <BottomNav /> : <div className="trip-sticky-controls">
+      <BottomNav />
+      <TripActions trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} />
+    </div> : null}
     <main>{children({ ...tripData, editMode: readOnly ? false : editMode, canEdit })}</main>
     {!readOnly ? <SyncToast state={syncState} error={syncError} onRetry={retrySync} onSignIn={() => setSignInOpen(true)} /> : null}
     {!readOnly ? <OwnerSignInDialog open={signInOpen} onOpenChange={changeSignInOpen} access={ownerAccess} /> : null}
