@@ -77,7 +77,7 @@ export function ItinerarySearch({ days, items, onSelect }: {
   }
 
   return <>
-    <button className="pill glass search-trigger" onClick={() => setOpen(true)}><MagnifyingGlass size={18} />Search trip</button>
+    <button className="pill glass search-trigger" aria-label="Search trip" onClick={() => setOpen(true)}><MagnifyingGlass size={18} /><span>Search trip</span></button>
     <Dialog open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setQuery('') }}>
       <DialogContent className="itinerary-search-dialog" aria-label="Search trip itinerary">
         <DialogHeader>

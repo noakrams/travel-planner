@@ -22,41 +22,32 @@ async function expectInsideViewport(dialog: Locator, page: Page) {
   if (viewport.width <= 767) expect(metrics.translateX.trim()).toBe('0')
 }
 
-test('Japan fixture includes the planned Tokyo days from September 18 to 22', async ({ page }) => {
+test('Japan fixture exposes the planned Tokyo dates in the date picker', async ({ page }) => {
   await page.goto('#/trip/trip-japan-2026')
-  await expect(page.getByRole('button', { name: /FRI 18/i })).toBeVisible()
-  await expect(page.getByRole('button', { name: /TUE 22/i })).toBeVisible()
-  await page.getByRole('button', { name: /TUE 22/i }).click()
+  await page.getByRole('button', { name: /Day 1/i }).click()
+  const picker = page.getByRole('dialog', { name: 'Choose itinerary day' })
+  await expect(picker).toBeVisible()
+  await expect(picker).toContainText('5 days in this trip')
+  await picker.getByRole('button', { name: 'Tuesday, September 22nd, 2026' }).click()
   await expect(page.getByRole('heading', { name: 'The east loop — Asakusa, Akihabara, and an easy last night' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Sensō-ji at opening' })).toBeVisible()
 })
 
-test('mobile stay grouping contains every date without overlapping the next group', async ({ page }) => {
+test('mobile date picker opens as a bottom sheet without overflow', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('#/trip/trip-japan-2026')
 
-  const group = page.locator('.day-strip-group').first()
-  const lastDate = page.getByRole('button', { name: /Tue 22/i })
-  const [groupBox, lastDateBox] = await Promise.all([group.boundingBox(), lastDate.boundingBox()])
+  await page.getByRole('button', { name: /Day 1/i }).click()
+  const picker = page.getByRole('dialog', { name: 'Choose itinerary day' })
+  const [pickerBox, pageWidth] = await Promise.all([picker.boundingBox(), page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))])
 
-  expect(groupBox).not.toBeNull()
-  expect(lastDateBox).not.toBeNull()
-  if (!groupBox || !lastDateBox) return
-  expect(lastDateBox.x).toBeGreaterThanOrEqual(groupBox.x)
-  expect(lastDateBox.x + lastDateBox.width).toBeLessThanOrEqual(groupBox.x + groupBox.width + 1)
+  expect(pickerBox).not.toBeNull()
+  expect(pageWidth.scroll).toBe(pageWidth.client)
 })
 
-test('iphone-landscape stay grouping contains every date', async ({ page }) => {
+test('desktop date picker remains a compact popover', async ({ page }) => {
   await page.goto('#/trip/trip-japan-2026')
-
-  const group = page.locator('.day-strip-group').first()
-  const lastDate = page.getByRole('button', { name: /Tue 22/i })
-  const [groupBox, lastDateBox] = await Promise.all([group.boundingBox(), lastDate.boundingBox()])
-
-  expect(groupBox).not.toBeNull()
-  expect(lastDateBox).not.toBeNull()
-  if (!groupBox || !lastDateBox) return
-  expect(lastDateBox.x + lastDateBox.width).toBeLessThanOrEqual(groupBox.x + groupBox.width + 1)
+  await page.getByRole('button', { name: /Day 1/i }).click()
+  await expect(page.getByRole('dialog', { name: 'Choose itinerary day' })).toBeVisible()
 })
 
 test('mobile navigation stays clear of itinerary content and the page does not overflow', async ({ page }) => {
@@ -64,11 +55,11 @@ test('mobile navigation stays clear of itinerary content and the page does not o
   await page.goto('#/trip/trip-japan-2026')
 
   const navigation = page.locator('.bottom-nav')
-  const dayStrip = page.locator('.day-strip')
+  const dateControl = page.getByRole('button', { name: /Day 1/i })
   const heading = page.getByRole('heading', { name: 'Arrive — and nothing else' })
   const [navigationBox, dayStripBox, headingBox, pageWidth] = await Promise.all([
     navigation.boundingBox(),
-    dayStrip.boundingBox(),
+    dateControl.boundingBox(),
     heading.boundingBox(),
     page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   ])
@@ -77,8 +68,8 @@ test('mobile navigation stays clear of itinerary content and the page does not o
   expect(dayStripBox).not.toBeNull()
   expect(headingBox).not.toBeNull()
   if (!navigationBox || !dayStripBox || !headingBox) return
-  expect(navigationBox.y + navigationBox.height).toBeLessThanOrEqual(dayStripBox.y + 1)
   expect(dayStripBox.y + dayStripBox.height).toBeLessThanOrEqual(headingBox.y + 1)
+  expect(navigationBox.y).toBeGreaterThan(headingBox.y)
   expect(pageWidth.scroll).toBe(pageWidth.client)
 })
 
@@ -215,7 +206,7 @@ test('keyboard focus and dialog escape remain predictable', async ({ page, brows
 test('primary mobile controls meet the 44px target', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('#/trip/trip-portugal-2026')
-  const controls = page.locator('.bottom-nav a, .hero-actions button')
+  const controls = page.locator('.bottom-nav a, .hero-top button, .trip-date-trigger')
   for (let index = 0; index < await controls.count(); index += 1) {
     const box = await controls.nth(index).boundingBox()
     expect(box?.height).toBeGreaterThanOrEqual(44)
