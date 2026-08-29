@@ -1,4 +1,5 @@
 import { MapPin } from '@phosphor-icons/react/MapPin'
+import { ArrowLeft } from '@phosphor-icons/react/ArrowLeft'
 import { ArrowRight } from '@phosphor-icons/react/ArrowRight'
 import { Plus } from '@phosphor-icons/react/Plus'
 import { format } from 'date-fns'
@@ -47,6 +48,7 @@ export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
     const manualDayId = selectedDay && selectedDay.routeDate === routeDate ? selectedDay.id : undefined
     const activeDay = days.find((day) => day.id === manualDayId) ?? days.find((day) => day.date === routeDate) ?? days[0]
     const activeDayIndex = activeDay ? days.findIndex((day) => day.id === activeDay.id) : -1
+    const previousDay = activeDayIndex > 0 ? days[activeDayIndex - 1] : undefined
     const nextDay = activeDayIndex >= 0 ? days[activeDayIndex + 1] : undefined
     const selectDay = (day: typeof activeDay) => {
       if (!day) return
@@ -58,8 +60,11 @@ export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
     return <>
       <div className="trip-date-picker-bar">
         <div className="trip-day-navigation">
+          <button type="button" className="day-navigation-button" disabled={!previousDay} aria-label={previousDay ? `Go to Day ${(previousDay.position ?? activeDayIndex - 1) + 1}, ${format(dateAtNoon(previousDay.date), 'EEEE, MMMM d')}` : 'Already on the first day'} onClick={() => { if (previousDay) selectDay(previousDay) }}>
+            <ArrowLeft aria-hidden="true" /><span>Previous day</span>
+          </button>
           <TripDatePicker days={days} activeDay={activeDay} onSelect={selectDay} />
-          <button type="button" className="next-day-button" disabled={!nextDay} aria-label={nextDay ? `Go to Day ${(nextDay.position ?? activeDayIndex + 1) + 1}, ${format(dateAtNoon(nextDay.date), 'EEEE, MMMM d')}` : 'Already on the final day'} onClick={() => { if (nextDay) selectDay(nextDay) }}>
+          <button type="button" className="day-navigation-button" disabled={!nextDay} aria-label={nextDay ? `Go to Day ${(nextDay.position ?? activeDayIndex + 1) + 1}, ${format(dateAtNoon(nextDay.date), 'EEEE, MMMM d')}` : 'Already on the final day'} onClick={() => { if (nextDay) selectDay(nextDay) }}>
             <span>Next day</span><ArrowRight aria-hidden="true" />
           </button>
         </div>

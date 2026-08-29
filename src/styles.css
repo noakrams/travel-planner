@@ -187,10 +187,10 @@ h3 { line-height: 1.04; }
 .trip-date-trigger { display: inline-flex; align-items: center; min-height: 54px; gap: 9px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 999px; background: rgb(255 255 255 / 96%); color: var(--atlas); box-shadow: 0 12px 30px rgb(23 33 29 / 14%); font-size: .78rem; font-weight: 800; cursor: pointer; backdrop-filter: blur(16px); }
 .trip-date-trigger > svg { width: 18px; height: 18px; }
 .trip-date-trigger > svg:last-child { width: 14px; height: 14px; margin-left: 3px; }
-.next-day-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 54px; gap: 8px; padding: 0 16px; border: 1px solid var(--atlas); border-radius: 999px; background: var(--atlas); box-shadow: 0 12px 30px rgb(23 33 29 / 14%); color: white; font-size: .78rem; font-weight: 800; cursor: pointer; transition: transform 180ms var(--ease), background-color 180ms var(--ease), opacity 180ms var(--ease); }
-.next-day-button svg { width: 18px; height: 18px; }
-.next-day-button:hover:not(:disabled) { transform: translateY(-1px); background: var(--route); }
-.next-day-button:disabled { cursor: not-allowed; opacity: .48; }
+.day-navigation-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 54px; gap: 8px; padding: 0 16px; border: 1px solid var(--atlas); border-radius: 999px; background: var(--atlas); box-shadow: 0 12px 30px rgb(23 33 29 / 14%); color: white; font-size: .78rem; font-weight: 800; cursor: pointer; transition: transform 180ms var(--ease), background-color 180ms var(--ease), opacity 180ms var(--ease); }
+.day-navigation-button svg { width: 18px; height: 18px; }
+.day-navigation-button:hover:not(:disabled) { transform: translateY(-1px); background: var(--route); }
+.day-navigation-button:disabled { cursor: not-allowed; opacity: .48; }
 .trip-date-scrim { position: fixed; z-index: 70; inset: 0; border: 0; background: transparent; cursor: default; }
 .trip-date-panel { position: absolute; z-index: 71; top: calc(100% + 11px); left: 50%; width: min(390px, calc(100vw - 32px)); padding: 18px; transform: translateX(-50%); border: 1px solid var(--line); border-radius: 24px; background: var(--surface); box-shadow: var(--shadow-float); color: var(--ink); }
 .trip-date-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 0 2px 12px; border-bottom: 1px solid var(--line); }
@@ -573,8 +573,8 @@ h3 { line-height: 1.04; }
   .trip-day-navigation { width: min(100%, 460px); }
   .trip-date-picker { min-width: 0; flex: 1; }
   .trip-date-trigger { width: min(100%, 460px); justify-content: center; min-height: 52px; }
-  .next-day-button { flex: 0 0 52px; min-height: 52px; padding: 0; }
-  .next-day-button span { display: none; }
+  .day-navigation-button { flex: 0 0 52px; min-height: 52px; padding: 0; }
+  .day-navigation-button span { display: none; }
   .trip-date-panel { position: fixed; top: auto; right: 0; bottom: 0; left: 0; width: 100%; min-height: min(62dvh, 560px); padding: 18px 18px max(22px, env(safe-area-inset-bottom)); transform: none; border: 0; border-radius: 26px 26px 0 0; animation: sheet-up 220ms var(--ease); }
   .trip-date-panel::before { display: block; width: 42px; height: 4px; margin: 0 auto 13px; border-radius: 999px; background: var(--line-strong); content: ""; }
   .trip-date-panel .rdp-root { margin-top: 20px; }

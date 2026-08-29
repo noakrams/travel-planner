@@ -50,13 +50,18 @@ test('desktop date picker remains a compact popover', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'Choose itinerary day' })).toBeVisible()
 })
 
-test('next-day button advances the plan and disables on the final day', async ({ page }) => {
+test('day navigation buttons move the plan in either direction and disable at its endpoints', async ({ page }) => {
   await page.goto('#/trip/trip-japan-2026')
 
+  await expect(page.getByRole('button', { name: 'Already on the first day' })).toBeDisabled()
   await page.getByRole('button', { name: /Go to Day 2/i }).click()
   await expect(page).toHaveURL(/#\/trip\/trip-japan-2026\/day\/2026-09-19$/)
   await expect(page.getByRole('heading', { name: 'Shibuya on foot — the jet-lag day' })).toBeVisible()
 
+  await page.getByRole('button', { name: /Go to Day 1/i }).click()
+  await expect(page).toHaveURL(/#\/trip\/trip-japan-2026\/day\/2026-09-18$/)
+
+  await page.getByRole('button', { name: /Go to Day 2/i }).click()
   for (let day = 3; day <= 5; day += 1) await page.getByRole('button', { name: new RegExp(`Go to Day ${day}`) }).click()
   await expect(page.getByRole('button', { name: 'Already on the final day' })).toBeDisabled()
 })
@@ -66,9 +71,13 @@ test('next-day button is reachable and fits on a phone screen', async ({ page })
   await page.goto('#/trip/trip-japan-2026')
 
   const nextDay = page.getByRole('button', { name: /Go to Day 2/i })
+  const previousDay = page.getByRole('button', { name: 'Already on the first day' })
   await expect(nextDay).toBeVisible()
+  await expect(previousDay).toBeVisible()
   await expect(nextDay).toHaveCSS('width', '52px')
   await expect(nextDay).toHaveCSS('height', '52px')
+  await expect(previousDay).toHaveCSS('width', '52px')
+  await expect(previousDay).toHaveCSS('height', '52px')
   await nextDay.click()
   await expect(page.getByRole('heading', { name: 'Shibuya on foot — the jet-lag day' })).toBeVisible()
   await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 375)
