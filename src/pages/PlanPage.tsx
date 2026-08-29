@@ -1,8 +1,9 @@
 import { MapPin } from '@phosphor-icons/react/MapPin'
+import { ArrowRight } from '@phosphor-icons/react/ArrowRight'
 import { Plus } from '@phosphor-icons/react/Plus'
 import { format } from 'date-fns'
 import { useEffect, useState } from 'react'
-import { useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BidiText } from '../components/BidiText'
 import { EditorDialog } from '../components/EditorDialog'
 import { TripLayout } from '../components/TripLayout'
@@ -18,7 +19,8 @@ import { TripDatePicker } from '../components/TripDatePicker'
 const dateAtNoon = (date: string) => new Date(`${date}T12:00:00`)
 
 export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
-  const { tripId, date } = useParams()
+  const { tripId, shareToken, date } = useParams()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const routeDate = date ?? searchParams.get('day') ?? undefined
@@ -44,9 +46,24 @@ export function PlanPage({ readOnly = false }: { readOnly?: boolean }) {
   return <TripLayout readOnly={readOnly}>{({ trip, days, items, editMode }) => {
     const manualDayId = selectedDay && selectedDay.routeDate === routeDate ? selectedDay.id : undefined
     const activeDay = days.find((day) => day.id === manualDayId) ?? days.find((day) => day.date === routeDate) ?? days[0]
+    const activeDayIndex = activeDay ? days.findIndex((day) => day.id === activeDay.id) : -1
+    const nextDay = activeDayIndex >= 0 ? days[activeDayIndex + 1] : undefined
+    const selectDay = (day: typeof activeDay) => {
+      if (!day) return
+      setSelectedDay({ id: day.id, routeDate: day.date })
+      if (readOnly && shareToken) navigate(`/share/${shareToken}?day=${day.date}`)
+      else if (tripId) navigate(`/trip/${tripId}/day/${day.date}`)
+    }
     const dayItems = items.filter((item) => item.dayId === activeDay?.id)
     return <>
-      <div className="trip-date-picker-bar"><TripDatePicker days={days} activeDay={activeDay} onSelect={(day) => setSelectedDay({ id: day.id, routeDate })} /></div>
+      <div className="trip-date-picker-bar">
+        <div className="trip-day-navigation">
+          <TripDatePicker days={days} activeDay={activeDay} onSelect={selectDay} />
+          <button type="button" className="next-day-button" disabled={!nextDay} aria-label={nextDay ? `Go to Day ${(nextDay.position ?? activeDayIndex + 1) + 1}, ${format(dateAtNoon(nextDay.date), 'EEEE, MMMM d')}` : 'Already on the final day'} onClick={() => { if (nextDay) selectDay(nextDay) }}>
+            <span>Next day</span><ArrowRight aria-hidden="true" />
+          </button>
+        </div>
+      </div>
       <div className="trip-layout-grid">
         <section className="itinerary-section" aria-labelledby="day-heading">
           <div className="day-heading"><div><p className="eyebrow">Day {(activeDay?.position ?? 0) + 1} · {activeDay ? format(dateAtNoon(activeDay.date), 'EEEE, MMMM d') : ''}</p>{activeDay?.baseLocation ? <p className="day-base-label"><MapPin aria-hidden="true" />Overnight in {activeDay.baseLocation}</p> : null}<BidiText as="h2" id="day-heading" tabIndex={-1} value={activeDay?.title ?? ''}>{activeDay?.title ?? 'Plan your first day'}</BidiText><BidiText as="p" value={activeDay?.summary ?? ''}>{activeDay?.summary}</BidiText>{editMode && activeDay ? <button className="text-action" onClick={() => { setSelectedDay({ id: activeDay.id, routeDate }); setDayEditorOpen(true) }}>Edit day details</button> : null}</div>{editMode && activeDay ? <button className="pill dark" onClick={() => { setEditing(undefined); setEditorOpen(true) }}><Plus />Add item</button> : null}</div>
