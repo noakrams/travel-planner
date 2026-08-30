@@ -20,6 +20,7 @@ export function TripHeader({
   onToggleEdit,
   onSearchSelect,
   readOnly = false,
+  canEdit = true,
   syncState = 'saved',
   onRetrySync,
   compact = false
@@ -31,6 +32,7 @@ export function TripHeader({
   onToggleEdit: () => void
   onSearchSelect: (day: TripDay, item?: ContentItem) => void
   readOnly?: boolean
+  canEdit?: boolean
   syncState?: 'saved' | 'waiting' | 'attention' | 'saving'
   onRetrySync?: () => void
   compact?: boolean
@@ -39,6 +41,10 @@ export function TripHeader({
   const [sharing, setSharing] = useState(false)
   const [shareError, setShareError] = useState('')
   const share = async () => {
+    if (!canEdit) {
+      onToggleEdit()
+      return
+    }
     setSharing(true)
     setShareError('')
     try {
@@ -105,12 +111,22 @@ export function TripHeader({
               <button
                 type="button"
                 className="hero-header-action share"
-                aria-label={copied ? 'Share link copied' : 'Share trip'}
+                aria-label={
+                  canEdit ? (copied ? 'Share link copied' : 'Share trip') : 'Sign in to share trip'
+                }
                 disabled={sharing}
                 onClick={share}
               >
                 <ShareNetwork aria-hidden="true" />
-                <span>{sharing ? 'Creating link…' : copied ? 'Link copied' : 'Share'}</span>
+                <span>
+                  {canEdit
+                    ? sharing
+                      ? 'Creating link…'
+                      : copied
+                        ? 'Link copied'
+                        : 'Share'
+                    : 'Sign in to share'}
+                </span>
               </button>
               <button
                 type="button"

@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import type { Trip } from '../domain/types'
@@ -73,5 +74,15 @@ describe('Trips and More navigation swap', () => {
     render(<TripHeader {...headerProps} readOnly />)
 
     expect(screen.queryByRole('button', { name: /edit trip/i })).not.toBeInTheDocument()
+  })
+
+  it('opens the editor sign-in flow instead of creating a share link for a viewer', async () => {
+    const user = userEvent.setup()
+    const requestSignIn = vi.fn()
+    render(<TripHeader {...headerProps} canEdit={false} onToggleEdit={requestSignIn} />)
+
+    await user.click(screen.getByRole('button', { name: 'Sign in to share trip' }))
+
+    expect(requestSignIn).toHaveBeenCalledOnce()
   })
 })

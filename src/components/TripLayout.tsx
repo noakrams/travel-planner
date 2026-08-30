@@ -49,7 +49,7 @@ export function TripLayout({ children, readOnly = false, variant = 'default' }: 
     else navigate(`/trip/${tripData.trip.id}/day/${day.date}`, { state: { itinerarySearchTarget: target } })
   }
   return <div className={`app-shell${variant === 'map' ? ' map-app-shell' : ''}`}>
-    <TripHeader trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} readOnly={readOnly} syncState={syncState} onRetrySync={retrySync} compact={variant === 'map'} />
+    <TripHeader trip={tripData.trip} days={tripData.days} items={tripData.items} editMode={editMode} onToggleEdit={toggleEdit} onSearchSelect={openSearchResult} readOnly={readOnly} canEdit={canEdit} syncState={syncState} onRetrySync={retrySync} compact={variant === 'map'} />
     {!readOnly ? <>
       <BottomNav />
     </> : null}
