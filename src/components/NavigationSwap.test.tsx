@@ -47,7 +47,10 @@ describe('Trips and More navigation swap', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute('href', '/trip/trip-test/more')
+    expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute(
+      'href',
+      '/trip/trip-test/more'
+    )
     expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute('aria-current', 'page')
     expect(screen.queryByRole('link', { name: 'Trips' })).not.toBeInTheDocument()
   })
@@ -64,5 +67,11 @@ describe('Trips and More navigation swap', () => {
 
     expect(screen.getByRole('link', { name: 'Trips' })).toHaveAttribute('href', '#/')
     expect(screen.queryByRole('link', { name: 'More and trip settings' })).not.toBeInTheDocument()
+  })
+
+  it('does not offer editing from a read-only shared trip', () => {
+    render(<TripHeader {...headerProps} readOnly />)
+
+    expect(screen.queryByRole('button', { name: /edit trip/i })).not.toBeInTheDocument()
   })
 })
