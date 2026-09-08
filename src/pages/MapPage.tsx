@@ -5,12 +5,12 @@ import { Funnel } from '@phosphor-icons/react/Funnel'
 import { MapPin } from '@phosphor-icons/react/MapPin'
 import { X } from '@phosphor-icons/react/X'
 import { format } from 'date-fns'
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { TripMapCanvas } from '../components/TripMapCanvas'
 import { TripLayout } from '../components/TripLayout'
 import { buildTripMapPoints, buildTripMapRoutes, mapKindLabels, mappableKinds, type TripMapPoint } from '../domain/map'
 import type { ContentItem, ContentKind, TripDay } from '../domain/types'
-import { coordinatesFromMapsUrl, persistMapPointCoordinates } from '../data/mapCoordinates'
+import { coordinatesFromMapsUrl, persistMapPointCoordinates, resolveMapPointCoordinates } from '../data/mapCoordinates'
 
 type CoordinateOverride = { latitude: number; longitude: number }
 
@@ -27,6 +27,7 @@ function TripMapContent({ days, items, editMode }: { days: TripDay[]; items: Con
   const [coordinateOverrides, setCoordinateOverrides] = useState<Record<string, CoordinateOverride>>({})
   const [repositionPointId, setRepositionPointId] = useState<string>()
   const [locationStatus, setLocationStatus] = useState('')
+  const resolvedLocationKeys = useRef(new Set<string>())
   const showAllDays = selectedDayIds.size === 0
   // A Maps link is the explicit opt-in for a route pin. It keeps secondary
   // notes off the map and gives the geocoder a trustworthy location source.
@@ -45,6 +46,25 @@ function TripMapContent({ days, items, editMode }: { days: TripDay[]; items: Con
   const selectedPoint = allPoints.find((point) => point.id === selectedPointId)
   const missingPoints = visiblePoints.filter((point) => !Number.isFinite(point.latitude) || !Number.isFinite(point.longitude))
   const missingCount = missingPoints.length
+
+  useEffect(() => {
+    const missingLocations = allPoints.filter((point) => !Number.isFinite(point.latitude) && !Number.isFinite(point.longitude) && Boolean(point.item.mapsUrl))
+    let cancelled = false
+    void Promise.all(missingLocations.map(async (point) => {
+      const locationKey = `${point.id}:${point.item.mapsUrl}`
+      if (resolvedLocationKeys.current.has(locationKey)) return
+      resolvedLocationKeys.current.add(locationKey)
+      try {
+        const coordinates = await resolveMapPointCoordinates(point)
+        if (!coordinates || cancelled) return
+        setCoordinateOverrides((current) => ({ ...current, [point.id]: coordinates }))
+        await persistMapPointCoordinates(point, coordinates)
+      } catch {
+        // A later visit can retry resolving or saving this location.
+      }
+    }))
+    return () => { cancelled = true }
+  }, [allPoints])
 
   const toggleDay = (dayId: string) => setSelectedDayIds((current) => {
     const next = new Set(current)

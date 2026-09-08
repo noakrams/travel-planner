@@ -20,7 +20,7 @@ export function coordinatesFromMapsUrl(rawUrl?: string): Coordinates | undefined
   if (!rawUrl) return undefined
   try {
     const url = new URL(rawUrl)
-    const query = url.searchParams.get('query') ?? url.searchParams.get('q') ?? ''
+    const query = url.searchParams.get('query') ?? url.searchParams.get('q') ?? url.searchParams.get('destination') ?? ''
     const match = query.match(coordinatePair) ?? decodeURIComponent(url.pathname).match(googleAtPair)
     if (!match) return undefined
     return validCoordinates(Number(match[1]), Number(match[2]))
@@ -30,13 +30,15 @@ export function coordinatesFromMapsUrl(rawUrl?: string): Coordinates | undefined
   }
 }
 
-function geocodingQueryFromMapsUrl(rawUrl?: string): string | undefined {
+export function geocodingQueryFromMapsUrl(rawUrl?: string): string | undefined {
   if (!rawUrl) return undefined
   try {
     const url = new URL(rawUrl)
     if (!/(^|\.)google\.[a-z.]+$/i.test(url.hostname)) return undefined
-    const query = url.searchParams.get('query') ?? url.searchParams.get('q') ?? ''
-    return query.trim() || undefined
+    const query = url.searchParams.get('query') ?? url.searchParams.get('q') ?? url.searchParams.get('destination') ?? ''
+    if (query.trim()) return query.trim()
+    const placeMatch = url.pathname.match(/\/maps\/place\/([^/]+)/i)
+    return placeMatch ? decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ').trim() : undefined
   } catch {
     return undefined
   }

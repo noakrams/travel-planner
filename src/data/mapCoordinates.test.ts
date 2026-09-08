@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { coordinatesFromMapsUrl, resolveMapPointCoordinates } from './mapCoordinates'
+import { coordinatesFromMapsUrl, geocodingQueryFromMapsUrl, resolveMapPointCoordinates } from './mapCoordinates'
 
 describe('map coordinate parsing', () => {
   it('reads coordinates from a Google Maps query', () => {
@@ -8,6 +8,11 @@ describe('map coordinate parsing', () => {
 
   it('reads coordinates from an at-style Google Maps URL', () => {
     expect(coordinatesFromMapsUrl('https://www.google.com/maps/place/Lisbon/@38.7223,-9.1393,14z')).toEqual({ latitude: 38.7223, longitude: -9.1393 })
+  })
+
+  it('uses place names and directions destinations when coordinates are absent', () => {
+    expect(geocodingQueryFromMapsUrl('https://www.google.com/maps/place/Kiyomizu-dera')).toBe('Kiyomizu-dera')
+    expect(geocodingQueryFromMapsUrl('https://www.google.com/maps/dir/?api=1&destination=Kyoto+Station')).toBe('Kyoto Station')
   })
 
   it('rejects invalid coordinate ranges', () => {

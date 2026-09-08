@@ -193,6 +193,7 @@ export function EditorDialog({
         <div className="form-field form-field-wide">
           <Label htmlFor="maps-url">Google Maps URL</Label>
           <Input id="maps-url" type="url" inputMode="url" {...register('mapsUrl')} aria-invalid={Boolean(errors.mapsUrl)} />
+          <p className="helper-text">Paste the full Google Maps place or search link. It will appear as a pin on the map.</p>
           {errors.mapsUrl ? <p className="field-error" role="alert">{errors.mapsUrl.message}</p> : null}
         </div>
         <details className="form-section form-field-wide attachment-fields">
