@@ -50,8 +50,16 @@ export async function signInWithGoogle(selectAccount = false) {
 export async function getOwnerAccess(): Promise<'signed-out' | 'owner' | 'editor' | 'denied'> {
   const neon = await getNeon()
   if (!neon) return 'signed-out'
-  const { data: auth, error: authError } = await neon.auth.getUser()
-  if (authError || !auth.user) return 'signed-out'
+
+  // Better Auth refreshes its session when a tab becomes active, but that refresh
+  // can still be in flight when CloudDataGate asks for access. Reading the cached
+  // session here can therefore send a recently-returned approved user to the
+  // "Account not approved" screen. Force a server-backed session read before
+  // asking the database to evaluate the allowlist.
+  const { data: sessionData, error: sessionError } = await neon.auth.getSession({
+    forceFetch: true
+  })
+  if (sessionError || !sessionData.session?.user) return 'signed-out'
   const { data: role, error: roleError } = await neon.rpc('get_app_access_role')
   if (roleError) throw roleError
   return role === 'owner' || role === 'editor' ? role : 'denied'

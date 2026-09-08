@@ -120,11 +120,30 @@ async function runCloudBootstrap() {
   if (!neon) return { state: 'unavailable' as const }
   const access = await getOwnerAccess()
   if (access !== 'owner' && access !== 'editor') return { state: access as 'signed-out' | 'denied' }
-  const { data: auth } = await neon.auth.getUser()
-  if (!auth.user) return { state: 'signed-out' as const }
+  const { data: sessionData, error: sessionError } = await neon.auth.getSession({
+    forceFetch: true
+  })
+  if (sessionError || !sessionData.session?.user) return { state: 'signed-out' as const }
 
-  const { data: remoteTrips, error: tripError } = await neon.from('trips').select('*').is('deleted_at', null)
+  const loadTrips = () => neon.from('trips').select('*').is('deleted_at', null)
+  let { data: remoteTrips, error: tripError } = await loadTrips()
   if (tripError) throw tripError
+
+  // An RLS query without the just-restored JWT can look like a valid empty
+  // response. Confirm the browser session and retry once before replacing the
+  // local snapshot with no trips.
+  if (!remoteTrips?.length) {
+    const { data: refreshedSession, error: refreshError } = await neon.auth.getSession({
+      forceFetch: true
+    })
+    if (refreshError || !refreshedSession.session?.user) return { state: 'signed-out' as const }
+
+    const retry = await loadTrips()
+    remoteTrips = retry.data
+    tripError = retry.error
+    if (tripError) throw tripError
+  }
+
   if (!remoteTrips?.length) {
     await localRepository.replaceFromCloud({ trips: [], days: [], items: [], media: [] })
     return { state: 'downloaded' as const }
