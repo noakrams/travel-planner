@@ -897,3 +897,39 @@ h3 { line-height: 1.04; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
   html { @apply font-sans; }
 }
+
+/* Tips: a quiet, searchable shelf for trip knowledge. */
+.tips-page { width: min(850px, calc(100% - 44px)); margin: 0 auto; padding: clamp(64px, 8vw, 104px) 0 130px; }
+.tips-page-header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+.tips-page h1 { margin: 0; font-size: clamp(4rem, 9vw, 7.6rem); letter-spacing: -.075em; }
+.tips-page-header p:not(.eyebrow), .tip-card p, .tips-empty p { color: var(--atlas-muted); line-height: 1.65; }
+.tips-add-button { min-height: 46px; padding-inline: 17px; border-radius: 999px; }
+.tips-search, .tip-label-search { position: relative; }
+.tips-search { margin-bottom: 14px; }
+.tips-search > svg, .tip-label-search > svg { position: absolute; z-index: 1; color: var(--route); pointer-events: none; }
+.tips-search > svg { top: 12px; left: 14px; width: 20px; height: 20px; }
+.tips-search input { min-height: 46px; padding-left: 45px; border-radius: 15px; }
+.tips-search button { position: absolute; top: 5px; right: 5px; display: grid; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; place-items: center; }
+.tips-label-filter, .tip-card-labels, .tip-selected-labels { display: flex; flex-wrap: wrap; gap: 7px; }
+.tips-label-filter { margin: 0 0 22px; overflow-x: auto; }
+.tips-label-filter button { min-height: 38px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--atlas-muted); cursor: pointer; font-size: .72rem; font-weight: 800; white-space: nowrap; }
+.tips-label-filter button.active { border-color: var(--route); background: var(--route); color: white; }
+.tips-list { display: grid; gap: 10px; }
+.tip-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; padding: 22px 20px 19px 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.tip-card::before { position: absolute; top: 21px; bottom: 21px; left: 0; width: 3px; border-radius: 0 4px 4px 0; background: var(--signal); content: ''; }
+.tip-card h2, .tips-empty h2 { margin: 0 0 7px; font-size: 1.35rem; letter-spacing: -.04em; }
+.tip-card p { max-width: 640px; margin: 0; font-size: .88rem; }
+.tip-card-labels { grid-column: 1; margin-top: 2px; }
+.tip-card-labels span, .tip-selected-labels button { min-height: 25px; padding: 0 9px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--route) 12%, white); color: var(--route); font-size: .64rem; font-weight: 820; }
+.tip-card-actions { display: flex; grid-column: 2; grid-row: 1 / span 2; gap: 3px; }
+.tips-empty { padding: 52px 28px; border: 1px dashed var(--line); border-radius: 22px; background: var(--surface-soft); }
+.tips-empty > svg { width: 28px; height: 28px; margin-bottom: 18px; color: var(--route); }
+.tip-form { display: grid; gap: 16px; }
+.tip-label-picker { min-width: 0; margin: 0; padding: 0; border: 0; }
+.tip-label-picker legend { margin-bottom: 7px; font-size: .75rem; font-weight: 790; }
+.tip-label-picker > p, .tip-label-options p { color: var(--atlas-muted); font-size: .76rem; }
+.tip-label-search > svg { top: 10px; left: 11px; width: 18px; height: 18px; }
+.tip-label-search input { min-height: 40px; padding-left: 37px; }
+.tip-label-options { display: grid; max-height: 160px; margin-top: 7px; padding: 5px; overflow-y: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.tip-label-options button { display: flex; align-items: center; min-height: 38px; gap: 8px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font-size: .8rem; text-align: left; }
+@media (max-width: 640px) { .tips-page { width: calc(100% - 26px); padding: 52px 0 116px; } .tips-page-header { align-items: start; flex-direction: column; } .tips-page h1 { font-size: clamp(4rem, 19vw, 5.4rem); } .tips-add-button { width: 100%; } .tip-card { padding: 20px 13px 17px 21px; } .tip-card-labels { grid-column: 1 / -1; } }

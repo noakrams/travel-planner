@@ -2,19 +2,31 @@ import { db } from './db'
 import { getNeon, hasNeonConfig } from './neon'
 import type { ContentItem, OutboxEntry } from '../domain/types'
 
-const tableForKind = (kind: ContentItem['kind']) => ({
-  activity: 'itinerary_items', booking: 'bookings', stay: 'stays', transport: 'transports',
-  place: 'places', food: 'food_nightlife', note: 'notes', warning: 'warnings', route: 'route_stops', expense: 'expenses'
-})[kind]
+const tableForKind = (kind: ContentItem['kind']) =>
+  ({
+    activity: 'itinerary_items',
+    booking: 'bookings',
+    stay: 'stays',
+    transport: 'transports',
+    place: 'places',
+    food: 'food_nightlife',
+    note: 'notes',
+    warning: 'warnings',
+    route: 'route_stops',
+    expense: 'expenses'
+  })[kind]
 
 export function syncErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') return error.message
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string')
+    return error.message
   if (typeof error === 'string' && error.trim()) return error
   return 'Synchronization failed.'
 }
 
-export function normalizeRemoteStatus(status: unknown): 'planned' | 'confirmed' | 'completed' | 'cancelled' {
+export function normalizeRemoteStatus(
+  status: unknown
+): 'planned' | 'confirmed' | 'completed' | 'cancelled' {
   if (status === 'confirmed' || status === 'booked') return 'confirmed'
   if (status === 'completed') return 'completed'
   if (status === 'cancelled') return 'cancelled'
@@ -22,43 +34,250 @@ export function normalizeRemoteStatus(status: unknown): 'planned' | 'confirmed' 
 }
 
 const basePayload = (payload: Record<string, unknown>) => ({
-  id: payload.id, trip_id: payload.tripId, created_at: payload.createdAt,
-  updated_at: payload.updatedAt, deleted_at: payload.deletedAt ?? null, version: payload.version
+  id: payload.id,
+  trip_id: payload.tripId,
+  created_at: payload.createdAt,
+  updated_at: payload.updatedAt,
+  deleted_at: payload.deletedAt ?? null,
+  version: payload.version
 })
 
 export function remotePayload(entry: OutboxEntry) {
   const payload = entry.payload as Record<string, unknown>
-  if (entry.entity === 'trip') return {
-    id: payload.id, owner_id: payload.ownerId, title: payload.title, subtitle: payload.subtitle,
-    start_date: payload.startDate, end_date: payload.endDate, timezone: payload.timezone,
-    base_currency: payload.baseCurrency, display_currency: payload.displayCurrency,
-    budget_amount: payload.budgetAmount ?? 0, budget_currency: payload.budgetCurrency ?? payload.displayCurrency,
-    category_budgets: payload.categoryBudgets ?? {},
-    status: payload.status, share_enabled: payload.shareEnabled, created_at: payload.createdAt,
-    updated_at: payload.updatedAt, deleted_at: payload.deletedAt ?? null, version: payload.version
-  }
-  if (entry.entity === 'day') return { ...basePayload(payload), date: payload.date, title: payload.title, summary: payload.summary, base_location: payload.baseLocation || null, position: payload.position }
+  if (entry.entity === 'trip')
+    return {
+      id: payload.id,
+      owner_id: payload.ownerId,
+      title: payload.title,
+      subtitle: payload.subtitle,
+      start_date: payload.startDate,
+      end_date: payload.endDate,
+      timezone: payload.timezone,
+      base_currency: payload.baseCurrency,
+      display_currency: payload.displayCurrency,
+      budget_amount: payload.budgetAmount ?? 0,
+      budget_currency: payload.budgetCurrency ?? payload.displayCurrency,
+      category_budgets: payload.categoryBudgets ?? {},
+      status: payload.status,
+      share_enabled: payload.shareEnabled,
+      created_at: payload.createdAt,
+      updated_at: payload.updatedAt,
+      deleted_at: payload.deletedAt ?? null,
+      version: payload.version
+    }
+  if (entry.entity === 'day')
+    return {
+      ...basePayload(payload),
+      date: payload.date,
+      title: payload.title,
+      summary: payload.summary,
+      base_location: payload.baseLocation || null,
+      position: payload.position
+    }
   if (entry.entity === 'item') {
     const attachments = Array.isArray(payload.attachments) ? payload.attachments : []
-    const firstEmail = attachments.find((attachment) => attachment && typeof attachment === 'object' && (attachment as Record<string, unknown>).kind === 'email') as Record<string, unknown> | undefined
+    const firstEmail = attachments.find(
+      (attachment) =>
+        attachment &&
+        typeof attachment === 'object' &&
+        (attachment as Record<string, unknown>).kind === 'email'
+    ) as Record<string, unknown> | undefined
     const base = {
       ...basePayload(payload),
       email_url: firstEmail?.url || payload.emailUrl || null,
       attachments
     }
-    const map = { latitude: payload.latitude ?? null, longitude: payload.longitude ?? null, geocoded_location: payload.geocodedLocation ?? null, map_hidden: payload.mapHidden ?? false }
+    const map = {
+      latitude: payload.latitude ?? null,
+      longitude: payload.longitude ?? null,
+      geocoded_location: payload.geocodedLocation ?? null,
+      map_hidden: payload.mapHidden ?? false
+    }
     switch (payload.kind) {
-      case 'activity': return { ...base, ...map, day_id: payload.dayId, item_type: 'activity', title: payload.title, start_time: payload.startTime || null, end_time: payload.endTime || null, location_name: payload.location || null, maps_url: payload.mapsUrl || null, description: payload.description, status: normalizeRemoteStatus(payload.status), planned_amount: payload.plannedAmount ?? null, actual_amount: payload.actualAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'booking': return { ...base, ...map, day_id: payload.dayId || null, start_time: payload.startTime || null, display_status: payload.status || null, itinerary_item_id: null, booking_type: 'reservation', title: payload.title, provider: payload.provider || null, location_name: payload.location || null, maps_url: payload.mapsUrl || null, confirmation_code: payload.confirmationCode || null, starts_at: null, ends_at: null, status: normalizeRemoteStatus(payload.status), notes: payload.description, planned_amount: payload.plannedAmount ?? null, actual_amount: payload.actualAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'stay': return { ...base, ...map, day_id: payload.dayId || null, start_time: payload.startTime || null, display_status: payload.status || null, name: payload.title, location: payload.location || null, check_in: null, check_out: null, maps_url: payload.mapsUrl || null, booking_id: null, notes: payload.description, planned_amount: payload.plannedAmount ?? null, actual_amount: payload.actualAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'transport': return { ...base, map_hidden: payload.mapHidden ?? false, day_id: payload.dayId || null, start_time: payload.startTime || null, display_status: payload.status || null, transport_type: 'other', title: payload.title, provider: payload.provider || null, origin: payload.origin || null, destination: payload.location || null, origin_latitude: payload.originLatitude ?? null, origin_longitude: payload.originLongitude ?? null, origin_geocoded_location: payload.originGeocodedLocation ?? null, destination_latitude: payload.destinationLatitude ?? payload.latitude ?? null, destination_longitude: payload.destinationLongitude ?? payload.longitude ?? null, destination_geocoded_location: payload.destinationGeocodedLocation ?? payload.geocodedLocation ?? null, departs_at: null, arrives_at: null, booking_id: null, status: normalizeRemoteStatus(payload.status), notes: payload.description, planned_amount: payload.plannedAmount ?? null, actual_amount: payload.actualAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'place': return { ...base, ...map, day_id: payload.dayId || null, start_time: payload.startTime || null, category: 'place', name: payload.title, location: payload.location || null, maps_url: payload.mapsUrl || null, notes: payload.description, status: payload.status || 'saved', planned_amount: payload.plannedAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'food': return { ...base, ...map, day_id: payload.dayId || null, start_time: payload.startTime || null, category: 'restaurant', name: payload.title, location: payload.location || null, maps_url: payload.mapsUrl || null, notes: payload.description, status: payload.status || 'saved', planned_amount: payload.plannedAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'note': return { ...base, day_id: payload.dayId || null, start_time: payload.startTime || null, note_type: 'note', title: payload.title, body: payload.description, priority: 0, planned_amount: payload.plannedAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'warning': return { ...base, day_id: payload.dayId || null, title: payload.title, body: payload.description, severity: 'notice', planned_amount: payload.plannedAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'route': return { ...base, ...map, city: payload.title, arrival_date: null, departure_date: null, maps_url: payload.mapsUrl || null, notes: payload.description, planned_amount: payload.plannedAmount ?? null, currency: payload.currency ?? null, budget_category: payload.budgetCategory ?? null, position: payload.position }
-      case 'expense': return { ...base, itinerary_item_id: null, category: payload.budgetCategory ?? 'other', title: payload.title, planned_amount: payload.plannedAmount ?? 0, actual_amount: payload.actualAmount ?? 0, currency: payload.currency ?? 'USD', paid: payload.paid ?? false, occurred_on: payload.occurredOn ?? null, notes: payload.description, budget_category: payload.budgetCategory ?? 'other', position: payload.position }
-      default: return base
+      case 'activity':
+        return {
+          ...base,
+          ...map,
+          day_id: payload.dayId,
+          item_type: 'activity',
+          title: payload.title,
+          start_time: payload.startTime || null,
+          end_time: payload.endTime || null,
+          location_name: payload.location || null,
+          maps_url: payload.mapsUrl || null,
+          description: payload.description,
+          status: normalizeRemoteStatus(payload.status),
+          planned_amount: payload.plannedAmount ?? null,
+          actual_amount: payload.actualAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'booking':
+        return {
+          ...base,
+          ...map,
+          day_id: payload.dayId || null,
+          start_time: payload.startTime || null,
+          display_status: payload.status || null,
+          itinerary_item_id: null,
+          booking_type: 'reservation',
+          title: payload.title,
+          provider: payload.provider || null,
+          location_name: payload.location || null,
+          maps_url: payload.mapsUrl || null,
+          confirmation_code: payload.confirmationCode || null,
+          starts_at: null,
+          ends_at: null,
+          status: normalizeRemoteStatus(payload.status),
+          notes: payload.description,
+          planned_amount: payload.plannedAmount ?? null,
+          actual_amount: payload.actualAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'stay':
+        return {
+          ...base,
+          ...map,
+          day_id: payload.dayId || null,
+          start_time: payload.startTime || null,
+          display_status: payload.status || null,
+          name: payload.title,
+          location: payload.location || null,
+          check_in: null,
+          check_out: null,
+          maps_url: payload.mapsUrl || null,
+          booking_id: null,
+          notes: payload.description,
+          planned_amount: payload.plannedAmount ?? null,
+          actual_amount: payload.actualAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'transport':
+        return {
+          ...base,
+          map_hidden: payload.mapHidden ?? false,
+          day_id: payload.dayId || null,
+          start_time: payload.startTime || null,
+          display_status: payload.status || null,
+          transport_type: 'other',
+          title: payload.title,
+          provider: payload.provider || null,
+          origin: payload.origin || null,
+          destination: payload.location || null,
+          origin_latitude: payload.originLatitude ?? null,
+          origin_longitude: payload.originLongitude ?? null,
+          origin_geocoded_location: payload.originGeocodedLocation ?? null,
+          destination_latitude: payload.destinationLatitude ?? payload.latitude ?? null,
+          destination_longitude: payload.destinationLongitude ?? payload.longitude ?? null,
+          destination_geocoded_location:
+            payload.destinationGeocodedLocation ?? payload.geocodedLocation ?? null,
+          departs_at: null,
+          arrives_at: null,
+          booking_id: null,
+          status: normalizeRemoteStatus(payload.status),
+          notes: payload.description,
+          planned_amount: payload.plannedAmount ?? null,
+          actual_amount: payload.actualAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'place':
+        return {
+          ...base,
+          ...map,
+          day_id: payload.dayId || null,
+          start_time: payload.startTime || null,
+          category: 'place',
+          name: payload.title,
+          location: payload.location || null,
+          maps_url: payload.mapsUrl || null,
+          notes: payload.description,
+          status: payload.status || 'saved',
+          planned_amount: payload.plannedAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'food':
+        return {
+          ...base,
+          ...map,
+          day_id: payload.dayId || null,
+          start_time: payload.startTime || null,
+          category: 'restaurant',
+          name: payload.title,
+          location: payload.location || null,
+          maps_url: payload.mapsUrl || null,
+          notes: payload.description,
+          status: payload.status || 'saved',
+          planned_amount: payload.plannedAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'note':
+        return {
+          ...base,
+          day_id: payload.dayId || null,
+          start_time: payload.startTime || null,
+          note_type: payload.noteType === 'tip' ? 'tip' : 'note',
+          title: payload.title,
+          body: payload.description,
+          priority: 0,
+          planned_amount: payload.plannedAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'warning':
+        return {
+          ...base,
+          day_id: payload.dayId || null,
+          title: payload.title,
+          body: payload.description,
+          severity: 'notice',
+          planned_amount: payload.plannedAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'route':
+        return {
+          ...base,
+          ...map,
+          city: payload.title,
+          arrival_date: null,
+          departure_date: null,
+          maps_url: payload.mapsUrl || null,
+          notes: payload.description,
+          planned_amount: payload.plannedAmount ?? null,
+          currency: payload.currency ?? null,
+          budget_category: payload.budgetCategory ?? null,
+          position: payload.position
+        }
+      case 'expense':
+        return {
+          ...base,
+          itinerary_item_id: null,
+          category: payload.budgetCategory ?? 'other',
+          title: payload.title,
+          planned_amount: payload.plannedAmount ?? 0,
+          actual_amount: payload.actualAmount ?? 0,
+          currency: payload.currency ?? 'USD',
+          paid: payload.paid ?? false,
+          occurred_on: payload.occurredOn ?? null,
+          notes: payload.description,
+          budget_category: payload.budgetCategory ?? 'other',
+          position: payload.position
+        }
+      default:
+        return base
     }
   }
   return payload
@@ -66,46 +285,78 @@ export function remotePayload(entry: OutboxEntry) {
 
 export async function synchronizeOutbox() {
   if (!navigator.onLine) return { synced: 0, failed: 0 }
-  const entries = (await db.outbox.where('state').equals('pending').sortBy('createdAt')).sort((a, b) => {
-    const rank = { trip: 0, day: 1, item: 2, media: 3 }
-    return rank[a.entity] - rank[b.entity]
-  })
-  if (!hasNeonConfig()) { await db.outbox.bulkDelete(entries.map((entry) => entry.id)); return { synced: entries.length, failed: 0 } }
+  const entries = (await db.outbox.where('state').equals('pending').sortBy('createdAt')).sort(
+    (a, b) => {
+      const rank = { trip: 0, day: 1, item: 2, media: 3 }
+      return rank[a.entity] - rank[b.entity]
+    }
+  )
+  if (!hasNeonConfig()) {
+    await db.outbox.bulkDelete(entries.map((entry) => entry.id))
+    return { synced: entries.length, failed: 0 }
+  }
   const neon = (await getNeon())!
   const { data: auth } = await neon.auth.getUser()
   if (!auth.user) {
     const timestamp = new Date().toISOString()
-    await Promise.all(entries.map((entry) => db.outbox.update(entry.id, {
-      state: 'failed', retryCount: entry.retryCount + 1,
-      error: 'Sign in to save changes to the cloud.', updatedAt: timestamp
-    })))
+    await Promise.all(
+      entries.map((entry) =>
+        db.outbox.update(entry.id, {
+          state: 'failed',
+          retryCount: entry.retryCount + 1,
+          error: 'Sign in to save changes to the cloud.',
+          updatedAt: timestamp
+        })
+      )
+    )
     return { synced: 0, failed: entries.length }
   }
-  let synced = 0; let failed = 0
+  let synced = 0
+  let failed = 0
   for (const entry of entries) {
     await db.outbox.update(entry.id, { state: 'processing', updatedAt: new Date().toISOString() })
     try {
       if (entry.entity === 'media') {
         const media = await db.media.get(entry.entityId)
         if (!media?.blob) throw new Error('The queued photo is no longer available on this device.')
-        throw new Error('Direct photo uploads are not available yet. Use an external image URL instead.')
+        throw new Error(
+          'Direct photo uploads are not available yet. Use an external image URL instead.'
+        )
       } else {
-        const table = entry.entity === 'trip' ? 'trips' : entry.entity === 'day' ? 'trip_days' : tableForKind((entry.payload as ContentItem).kind)
+        const table =
+          entry.entity === 'trip'
+            ? 'trips'
+            : entry.entity === 'day'
+              ? 'trip_days'
+              : tableForKind((entry.payload as ContentItem).kind)
         const outgoing = remotePayload(entry) as Record<string, unknown>
-        if (entry.entity === 'trip' && (!outgoing.owner_id || outgoing.owner_id === 'local-owner')) {
+        if (
+          entry.entity === 'trip' &&
+          (!outgoing.owner_id || outgoing.owner_id === 'local-owner')
+        ) {
           outgoing.owner_id = auth.user.id
         }
         const { error } = await neon.from(table).upsert(outgoing, { onConflict: 'id' })
         if (error) throw error
         const shareToken = (entry.payload as { shareToken?: string }).shareToken
         if (entry.entity === 'trip' && shareToken) {
-          const { error: shareError } = await neon.rpc('set_trip_share_token', { target_trip_id: entry.entityId, raw_token: shareToken, enabled: true })
+          const { error: shareError } = await neon.rpc('set_trip_share_token', {
+            target_trip_id: entry.entityId,
+            raw_token: shareToken,
+            enabled: true
+          })
           if (shareError) throw shareError
         }
       }
-      await db.outbox.delete(entry.id); synced += 1
+      await db.outbox.delete(entry.id)
+      synced += 1
     } catch (error) {
-      await db.outbox.update(entry.id, { state: 'failed', retryCount: entry.retryCount + 1, error: syncErrorMessage(error), updatedAt: new Date().toISOString() })
+      await db.outbox.update(entry.id, {
+        state: 'failed',
+        retryCount: entry.retryCount + 1,
+        error: syncErrorMessage(error),
+        updatedAt: new Date().toISOString()
+      })
       failed += 1
     }
   }
@@ -113,7 +364,11 @@ export async function synchronizeOutbox() {
 }
 
 export async function retryFailedOutbox() {
-  const retryable = (await db.outbox.toArray()).filter((entry) => entry.state === 'failed' || entry.state === 'processing')
-  await Promise.all(retryable.map((entry) => db.outbox.update(entry.id, { state: 'pending', error: undefined })))
+  const retryable = (await db.outbox.toArray()).filter(
+    (entry) => entry.state === 'failed' || entry.state === 'processing'
+  )
+  await Promise.all(
+    retryable.map((entry) => db.outbox.update(entry.id, { state: 'pending', error: undefined }))
+  )
   return synchronizeOutbox()
 }

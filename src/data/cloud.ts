@@ -1,4 +1,11 @@
-import type { ContentItem, ContentKind, ItemAttachment, MediaRecord, Trip, TripDay } from '../domain/types'
+import type {
+  ContentItem,
+  ContentKind,
+  ItemAttachment,
+  MediaRecord,
+  Trip,
+  TripDay
+} from '../domain/types'
 import { localRepository } from './repository'
 import { getNeon, getOwnerAccess, hasNeonConfig } from './neon'
 import { normalizeCurrency } from '../domain/currency'
@@ -6,11 +13,13 @@ import type { BudgetCategory } from '../domain/types'
 
 type Row = Record<string, unknown>
 
-const text = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback
-const optionalText = (value: unknown) => typeof value === 'string' && value ? value : undefined
-const number = (value: unknown, fallback = 0) => typeof value === 'number' ? value : value == null ? fallback : Number(value)
-const optionalNumber = (value: unknown) => value == null ? undefined : number(value)
-const boolean = (value: unknown) => value === true || value === 'true' || value === 1 || value === '1'
+const text = (value: unknown, fallback = '') => (typeof value === 'string' ? value : fallback)
+const optionalText = (value: unknown) => (typeof value === 'string' && value ? value : undefined)
+const number = (value: unknown, fallback = 0) =>
+  typeof value === 'number' ? value : value == null ? fallback : Number(value)
+const optionalNumber = (value: unknown) => (value == null ? undefined : number(value))
+const boolean = (value: unknown) =>
+  value === true || value === 'true' || value === 1 || value === '1'
 const timestamp = (value: unknown) => text(value, new Date().toISOString())
 
 function attachments(value: unknown, legacyEmailUrl?: string): ItemAttachment[] {
@@ -21,44 +30,66 @@ function attachments(value: unknown, legacyEmailUrl?: string): ItemAttachment[] 
       const kind = text(row.kind)
       const url = text(row.url)
       if (!['email', 'link', 'file'].includes(kind) || !url) return []
-      return [{
-        id: text(row.id, crypto.randomUUID()),
-        kind: kind as ItemAttachment['kind'],
-        label: text(row.label, kind === 'email' ? 'Confirmation email' : kind === 'file' ? 'File' : 'Link'),
-        url
-      }]
+      return [
+        {
+          id: text(row.id, crypto.randomUUID()),
+          kind: kind as ItemAttachment['kind'],
+          label: text(
+            row.label,
+            kind === 'email' ? 'Confirmation email' : kind === 'file' ? 'File' : 'Link'
+          ),
+          url
+        }
+      ]
     })
   }
-  return legacyEmailUrl ? [{ id: 'legacy-email', kind: 'email', label: 'Confirmation email', url: legacyEmailUrl }] : []
+  return legacyEmailUrl
+    ? [{ id: 'legacy-email', kind: 'email', label: 'Confirmation email', url: legacyEmailUrl }]
+    : []
 }
 
 function base(row: Row) {
   return {
-    id: text(row.id), createdAt: timestamp(row.created_at), updatedAt: timestamp(row.updated_at),
-    deletedAt: optionalText(row.deleted_at), version: number(row.version, 1)
+    id: text(row.id),
+    createdAt: timestamp(row.created_at),
+    updatedAt: timestamp(row.updated_at),
+    deletedAt: optionalText(row.deleted_at),
+    version: number(row.version, 1)
   }
 }
 
-const fallbackCoverUrl = 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82'
+const fallbackCoverUrl =
+  'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1800&q=82'
 
 export function remoteTrip(row: Row, media: MediaRecord[] = []): Trip {
   const cover = media.find((entry) => entry.id === text(row.cover_photo_id))
   return {
-    ...base(row), ownerId: text(row.owner_id), title: text(row.title), subtitle: text(row.subtitle),
-    startDate: text(row.start_date), endDate: text(row.end_date), timezone: text(row.timezone, 'UTC'),
-    baseCurrency: text(row.base_currency, 'USD'), displayCurrency: normalizeCurrency(row.display_currency),
-    budgetAmount: number(row.budget_amount), budgetCurrency: normalizeCurrency(row.budget_currency ?? row.display_currency),
-    categoryBudgets: recordOfNumbers(row.category_budgets) as Partial<Record<BudgetCategory, number>>,
+    ...base(row),
+    ownerId: text(row.owner_id),
+    title: text(row.title),
+    subtitle: text(row.subtitle),
+    startDate: text(row.start_date),
+    endDate: text(row.end_date),
+    timezone: text(row.timezone, 'UTC'),
+    baseCurrency: text(row.base_currency, 'USD'),
+    displayCurrency: normalizeCurrency(row.display_currency),
+    budgetAmount: number(row.budget_amount),
+    budgetCurrency: normalizeCurrency(row.budget_currency ?? row.display_currency),
+    categoryBudgets: recordOfNumbers(row.category_budgets) as Partial<
+      Record<BudgetCategory, number>
+    >,
     coverUrl: cover?.externalUrl ?? fallbackCoverUrl,
     coverAlt: cover?.altText ?? 'A scenic destination landscape',
-    status: text(row.status, 'upcoming') as Trip['status'], shareEnabled: Boolean(row.share_enabled)
+    status: text(row.status, 'upcoming') as Trip['status'],
+    shareEnabled: Boolean(row.share_enabled)
   }
 }
 
 export function attachRemoteMedia(items: ContentItem[], media: MediaRecord[]): ContentItem[] {
   const firstImageByItem = new Map<string, MediaRecord>()
   for (const entry of media.toSorted((a, b) => a.position - b.position)) {
-    if (entry.itemId && entry.externalUrl && !firstImageByItem.has(entry.itemId)) firstImageByItem.set(entry.itemId, entry)
+    if (entry.itemId && entry.externalUrl && !firstImageByItem.has(entry.itemId))
+      firstImageByItem.set(entry.itemId, entry)
   }
   return items.map((item) => {
     const image = firstImageByItem.get(item.id)
@@ -67,39 +98,79 @@ export function attachRemoteMedia(items: ContentItem[], media: MediaRecord[]): C
 }
 
 export function remoteDay(row: Row): TripDay {
-  return { ...base(row), tripId: text(row.trip_id), date: text(row.date), title: text(row.title), summary: text(row.summary), baseLocation: optionalText(row.base_location), position: number(row.position) }
+  return {
+    ...base(row),
+    tripId: text(row.trip_id),
+    date: text(row.date),
+    title: text(row.title),
+    summary: text(row.summary),
+    baseLocation: optionalText(row.base_location),
+    position: number(row.position)
+  }
 }
 
 export function commonItem(row: Row, kind: ContentKind): ContentItem {
   const emailUrl = optionalText(row.email_url)
   return {
-    ...base(row), tripId: text(row.trip_id), dayId: optionalText(row.day_id), kind,
-    title: text(row.title ?? row.name ?? row.city), description: text(row.description ?? row.notes ?? row.body),
-    startTime: optionalText(row.start_time), endTime: optionalText(row.end_time),
-    location: optionalText(row.location_name ?? row.location ?? row.destination), origin: optionalText(row.origin), mapsUrl: optionalText(row.maps_url),
-    latitude: optionalNumber(row.latitude), longitude: optionalNumber(row.longitude), geocodedLocation: optionalText(row.geocoded_location),
-    originLatitude: optionalNumber(row.origin_latitude), originLongitude: optionalNumber(row.origin_longitude), originGeocodedLocation: optionalText(row.origin_geocoded_location),
-    destinationLatitude: optionalNumber(row.destination_latitude), destinationLongitude: optionalNumber(row.destination_longitude), destinationGeocodedLocation: optionalText(row.destination_geocoded_location),
+    ...base(row),
+    tripId: text(row.trip_id),
+    dayId: optionalText(row.day_id),
+    kind,
+    noteType: kind === 'note' && row.note_type === 'tip' ? 'tip' : 'note',
+    title: text(row.title ?? row.name ?? row.city),
+    description: text(row.description ?? row.notes ?? row.body),
+    startTime: optionalText(row.start_time),
+    endTime: optionalText(row.end_time),
+    location: optionalText(row.location_name ?? row.location ?? row.destination),
+    origin: optionalText(row.origin),
+    mapsUrl: optionalText(row.maps_url),
+    latitude: optionalNumber(row.latitude),
+    longitude: optionalNumber(row.longitude),
+    geocodedLocation: optionalText(row.geocoded_location),
+    originLatitude: optionalNumber(row.origin_latitude),
+    originLongitude: optionalNumber(row.origin_longitude),
+    originGeocodedLocation: optionalText(row.origin_geocoded_location),
+    destinationLatitude: optionalNumber(row.destination_latitude),
+    destinationLongitude: optionalNumber(row.destination_longitude),
+    destinationGeocodedLocation: optionalText(row.destination_geocoded_location),
     mapHidden: boolean(row.map_hidden),
     emailUrl,
     attachments: attachments(row.attachments, emailUrl),
-    provider: optionalText(row.provider), confirmationCode: optionalText(row.confirmation_code), status: optionalText(row.display_status ?? row.status),
-    position: number(row.position), plannedAmount: optionalNumber(row.planned_amount), actualAmount: optionalNumber(row.actual_amount),
+    provider: optionalText(row.provider),
+    confirmationCode: optionalText(row.confirmation_code),
+    status: optionalText(row.display_status ?? row.status),
+    position: number(row.position),
+    plannedAmount: optionalNumber(row.planned_amount),
+    actualAmount: optionalNumber(row.actual_amount),
     currency: row.currency ? normalizeCurrency(row.currency) : undefined,
-    budgetCategory: optionalText(row.budget_category ?? (kind === 'expense' ? row.category : undefined)) as ContentItem['budgetCategory'],
-    occurredOn: optionalText(row.occurred_on), paid: row.paid == null ? undefined : Boolean(row.paid)
+    budgetCategory: optionalText(
+      row.budget_category ?? (kind === 'expense' ? row.category : undefined)
+    ) as ContentItem['budgetCategory'],
+    occurredOn: optionalText(row.occurred_on),
+    paid: row.paid == null ? undefined : Boolean(row.paid)
   }
 }
 
 function recordOfNumbers(value: unknown): Record<string, number> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
-  return Object.fromEntries(Object.entries(value).flatMap(([key, entry]) => Number.isFinite(Number(entry)) ? [[key, Number(entry)]] : []))
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([key, entry]) =>
+      Number.isFinite(Number(entry)) ? [[key, Number(entry)]] : []
+    )
+  )
 }
 
 const tableKinds: Array<[string, ContentKind]> = [
-  ['itinerary_items', 'activity'], ['bookings', 'booking'], ['stays', 'stay'], ['transports', 'transport'],
-  ['route_stops', 'route'], ['places', 'place'], ['food_nightlife', 'food'], ['notes', 'note'],
-  ['warnings', 'warning'], ['expenses', 'expense']
+  ['itinerary_items', 'activity'],
+  ['bookings', 'booking'],
+  ['stays', 'stay'],
+  ['transports', 'transport'],
+  ['route_stops', 'route'],
+  ['places', 'place'],
+  ['food_nightlife', 'food'],
+  ['notes', 'note'],
+  ['warnings', 'warning'],
+  ['expenses', 'expense']
 ]
 
 export type CloudBootstrapResult = {
@@ -109,7 +180,10 @@ export type CloudBootstrapResult = {
 let currentBootstrap: Promise<CloudBootstrapResult> | undefined
 
 export function bootstrapCloudData() {
-  if (!currentBootstrap) currentBootstrap = runCloudBootstrap().finally(() => { currentBootstrap = undefined })
+  if (!currentBootstrap)
+    currentBootstrap = runCloudBootstrap().finally(() => {
+      currentBootstrap = undefined
+    })
   return currentBootstrap
 }
 
@@ -152,26 +226,43 @@ async function runCloudBootstrap() {
   const tripIds = remoteTrips.map((trip: Record<string, unknown>) => text(trip.id))
   const [daysResult, ...itemResults] = await Promise.all([
     neon.from('trip_days').select('*').in('trip_id', tripIds).is('deleted_at', null),
-    ...tableKinds.map(([table]) => neon.from(table).select('*').in('trip_id', tripIds).is('deleted_at', null))
+    ...tableKinds.map(([table]) =>
+      neon.from(table).select('*').in('trip_id', tripIds).is('deleted_at', null)
+    )
   ])
   if (daysResult.error) throw daysResult.error
   for (const result of itemResults) if (result.error) throw result.error
 
-  const remoteItems = itemResults.flatMap((result, index) => (result.data ?? []).map((row: Record<string, unknown>) => commonItem(row, tableKinds[index][1])))
-  const { data: mediaRows, error: mediaError } = await neon.from('media').select('*').in('trip_id', tripIds).is('deleted_at', null)
+  const remoteItems = itemResults.flatMap((result, index) =>
+    (result.data ?? []).map((row: Record<string, unknown>) => commonItem(row, tableKinds[index][1]))
+  )
+  const { data: mediaRows, error: mediaError } = await neon
+    .from('media')
+    .select('*')
+    .in('trip_id', tripIds)
+    .is('deleted_at', null)
   if (mediaError) throw mediaError
   const media: MediaRecord[] = (mediaRows ?? []).map((row: Record<string, unknown>) => {
     const storagePath = optionalText(row.storage_path)
     const publicUrl = optionalText(row.external_url)
     return {
-      ...base(row), tripId: text(row.trip_id), itemId: optionalText(row.itinerary_item_id),
-      sourceType: text(row.source_type, 'external') as MediaRecord['sourceType'], storagePath,
-      externalUrl: publicUrl, altText: text(row.alt_text, 'Trip photo'), caption: text(row.caption), position: number(row.position)
+      ...base(row),
+      tripId: text(row.trip_id),
+      itemId: optionalText(row.itinerary_item_id),
+      sourceType: text(row.source_type, 'external') as MediaRecord['sourceType'],
+      storagePath,
+      externalUrl: publicUrl,
+      altText: text(row.alt_text, 'Trip photo'),
+      caption: text(row.caption),
+      position: number(row.position)
     }
   })
   const items = attachRemoteMedia(remoteItems, media)
   await localRepository.replaceFromCloud({
-    trips: remoteTrips.map((trip: Record<string, unknown>) => remoteTrip(trip, media)), days: (daysResult.data ?? []).map(remoteDay), items, media
+    trips: remoteTrips.map((trip: Record<string, unknown>) => remoteTrip(trip, media)),
+    days: (daysResult.data ?? []).map(remoteDay),
+    items,
+    media
   })
   return { state: 'downloaded' as const }
 }

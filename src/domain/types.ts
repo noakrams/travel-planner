@@ -1,7 +1,8 @@
 export type SyncState = 'saving' | 'saved' | 'waiting' | 'attention'
 export type TripStatus = 'upcoming' | 'active' | 'archived'
 export type CurrencyCode = 'JPY' | 'ILS' | 'USD' | 'EUR'
-export type BudgetCategory = 'accommodation' | 'transportation' | 'food' | 'activities' | 'shopping' | 'other'
+export type BudgetCategory =
+  'accommodation' | 'transportation' | 'food' | 'activities' | 'shopping' | 'other'
 export type ContentKind =
   | 'activity'
   | 'booking'
@@ -13,6 +14,8 @@ export type ContentKind =
   | 'warning'
   | 'route'
   | 'expense'
+
+export type NoteType = 'note' | 'tip'
 
 export interface BaseRecord {
   id: string
@@ -63,6 +66,7 @@ export interface ContentItem extends BaseRecord {
   tripId: string
   dayId?: string
   kind: ContentKind
+  noteType?: NoteType
   title: string
   description: string
   startTime?: string
