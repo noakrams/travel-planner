@@ -38,8 +38,8 @@ const headerProps = {
   onSearchSelect: vi.fn()
 }
 
-describe('Trips and More navigation swap', () => {
-  it('puts More in the primary tab bar for the current trip', () => {
+describe('Trips and Tips navigation swap', () => {
+  it('puts Tips in the primary tab bar for the current trip', () => {
     render(
       <MemoryRouter initialEntries={['/trip/trip-test/more']}>
         <Routes>
@@ -48,11 +48,11 @@ describe('Trips and More navigation swap', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Tips' })).toHaveAttribute(
       'href',
       '/trip/trip-test/more'
     )
-    expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Tips' })).toHaveAttribute('aria-current', 'page')
     expect(screen.queryByRole('link', { name: 'Trips' })).not.toBeInTheDocument()
   })
 
